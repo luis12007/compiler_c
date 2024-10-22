@@ -34,7 +34,13 @@ palabras_reservadas = {
     'free': 'Liberacion de Memoria',
     'const': 'Declaracion Constante',
     'volatile': 'Modificador Volatile',
-    'inline': 'Modificador Inline'
+    'inline': 'Modificador Inline',
+    'scanf': 'Funcion de Lectura',
+    'printf': 'Funcion de Escritura',
+    'strlen': 'Funcion de Longitud de Cadena',
+    'strcpy': 'Funcion de Copia de Cadena',
+    '#include': 'Directiva de Inclusion',
+    '#define': 'Definición de Macro'
 }
 
 # Diccionario de los operadores
@@ -56,10 +62,12 @@ operadores = {
     '&&': 'AND logico',
     '||': 'OR logico',
     '!': 'Negacion logica',
-    '&': 'AND',
-    '|': 'OR',
-    '^': 'XOR',
-    '~': 'Complemento'
+    '&': 'AND bit a bit',
+    '|': 'OR bit a bit',
+    '^': 'XOR bit a bit',
+    '~': 'Complemento',
+    '<<': 'Desplazamiento a la izquierda',
+    '>>': 'Desplazamiento a la derecha'
 }
 
 # Diccionario de delimitadores
@@ -74,7 +82,7 @@ delimitadores = {
     '}': 'Fin de llave',
     '[': 'Inicio de corchete',
     ']': 'Fin de corchete',
-    '#': 'Inicio de include'
+    '#': 'Inicio de directiva'
 }
 
 class Token:
@@ -157,7 +165,7 @@ def lexer(codigo):
         # Operadores
         if char in operadores.keys():
             if char == '<' and codigo[i+1] == '<':
-                tokens.append(Token('Tuberia de Datos', '<<', linea))
+                tokens.append(Token('Desplazamiento a la Izquierda', '<<', linea))
                 i += 2
             else:
                 tokens.append(Token(operadores[char], char, linea))
@@ -199,7 +207,6 @@ def imprimir_tabla(tokens):
     # Crear una tabla para los símbolos
     tabla = PrettyTable()
     tabla.field_names = ["Tipo", "Valor", "Línea"]
-
     for token in tokens:
         tabla.add_row([token.tipo, token.valor, token.linea])
     print(tabla)
