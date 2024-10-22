@@ -211,14 +211,3 @@ def imprimir_tabla(tokens):
         tabla.add_row([token.tipo, token.valor, token.linea])
     print(tabla)
 
-
-# Leer el archivo example_one.cpp
-with open('example_one.c', 'r') as content:
-    codigo = content.read()
-
-# Ejecutar el lexer
-tokens = lexer(codigo)
-
-
-# Imprimir la tabla de símbolos
-imprimir_tabla(tokens)
