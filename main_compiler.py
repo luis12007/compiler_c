@@ -1,4 +1,5 @@
-from lexer_c import lexer, imprimir_tabla
+from lexer_c import lexer, imprimir_tabla, imprimir_variables, trabajar_variables, Token
+from parser import parse
 
 # Leer el archivo example_one.c
 with open('example_one.c', 'r') as file:
@@ -7,5 +8,12 @@ with open('example_one.c', 'r') as file:
 # Ejecutar el lexer
 tokens = lexer(codigo)
 
-# Imprimir los tokens en una tabla
+# Obtener valores
+variables = trabajar_variables(tokens)
+
+# Imprimir la tabla de símbolos
 imprimir_tabla(tokens)
+
+imprimir_variables(variables)
+
+print(parse(tokens, Token))

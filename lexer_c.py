@@ -211,3 +211,72 @@ def imprimir_tabla(tokens):
         tabla.add_row([token.tipo, token.valor, token.linea])
     print(tabla)
 
+
+
+""" Working var table """
+class Var:
+    def __init__(self, name, value):
+        self.name = name
+        self.value = value
+
+    def __repr__(self):
+        return f'Var({self.name}, {self.value})'
+    
+def trabajar_variables(tokens):
+    length = len(tokens)
+    variables = {}
+    for i in range(length - 1):
+        if(tokens[i].tipo == 'ID' and tokens[i+1].tipo == 'Asignacion'):
+            counter = 2
+            identifier = tokens[i].valor
+            operators = []
+            values = []
+            while(tokens[i+counter].tipo != 'Punto y coma'):
+                if(tokens[i+counter].tipo == 'ID'):
+                    values.append(tokens[i+counter].valor)
+                if(tokens[i+counter].tipo == 'NUMERO'):
+                    values.append(int(tokens[i+counter].valor))
+                if(tokens[i+counter].tipo == 'Multiplicacion' or tokens[i+counter].tipo == 'Operador suma' or tokens[i+counter].tipo == 'Operador resta'
+                    or tokens[i+counter].tipo == 'Division'):
+                    operators.append(tokens[i+counter].valor)
+                counter += 1
+            val = 0
+            t2 = values.pop()
+            if(isinstance(t2, str)):
+                if(t2 in variables):
+                    val = int(variables[t2])
+            else:
+                val = t2
+            while(len(values) > 0):
+                op = operators.pop()
+                val2 = 1
+                t2 = values.pop()
+                if(isinstance(t2, str)):
+                    if(t2 in variables):
+                            val2 = int(variables[t2])
+                else:
+                    val2 = t2
+                if(op == '-'):
+                    val -= val2
+                if(op == '+'):
+                    val += val2
+                if(op == '*'):
+                    val *= val2
+                if(op == '/'):
+                    val /= val2
+            variables[identifier] = val
+    li = []
+    for i, j in variables.items():
+        li.append(Var(i, j))
+    return li
+
+def imprimir_variables(variables):
+        # Crear una tabla para los símbolos
+    tabla = PrettyTable()
+    tabla.field_names = ["Nombre", "Valor"]
+
+    for var in variables:
+        tabla.add_row([var.name, var.value])
+    print(tabla)
+
+

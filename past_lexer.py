@@ -265,3 +265,4 @@ variables = trabajar_variables(tokens)
 imprimir_tabla(tokens)
 
 imprimir_variables(variables)
+
