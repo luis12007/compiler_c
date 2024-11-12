@@ -1,13 +1,8 @@
-/* Function to calculate factorial */
+#include <stdio.h>
 int factorial(int n) {
-    // Check if number is negative
-    if (n < 0) {
-        return -1; // Invalid input
-    }
-
     int result = 1;
     for (int i = 1; i <= n; i++) {
-        result = result * i; // Multiply result by i
+        result = result * i;
     }
-    return result; // Return the factorial
+    return result;
 }

@@ -1,6 +1,6 @@
 from prettytable import PrettyTable
 
-# Definición de los diccionarios
+# Define dictionaries for reserved words, operators, and delimiters
 palabras_reservadas = {
     'if': 'Condicional If',
     'else': 'Condicional Else',
@@ -15,6 +15,7 @@ palabras_reservadas = {
     'short': 'Tipo de dato short',
     'void': 'Tipo de retorno void',
     'char': 'Tipo de dato char',
+    'string': 'Tipo de dato string',
     'struct': 'Declaracion de Estructura',
     'union': 'Declaracion de Union',
     'enum': 'Declaracion de Enum',
@@ -43,9 +44,11 @@ palabras_reservadas = {
     '#define': 'Definición de Macro'
 }
 
-# Diccionario de los operadores
+# Dictionary for operators
 operadores = {
     '=': 'Asignacion',
+    '==': 'Igualdad',
+    '!=': 'Diferente de',
     '+': 'Operador suma',
     '-': 'Operador resta',
     '*': 'Multiplicacion',
@@ -53,8 +56,6 @@ operadores = {
     '++': 'Operador incremento',
     '--': 'Operador decremento',
     '%': 'Modulo',
-    '==': 'Igualdad',
-    '!=': 'Diferente de',
     '>': 'Mayor que',
     '<': 'Menor que',
     '>=': 'Mayor o igual que',
@@ -67,10 +68,14 @@ operadores = {
     '^': 'XOR bit a bit',
     '~': 'Complemento',
     '<<': 'Desplazamiento a la izquierda',
-    '>>': 'Desplazamiento a la derecha'
+    '>>': 'Desplazamiento a la derecha',
+    '+=': 'Asignacion suma',
+    '-=': 'Asignacion resta',
+    '*=': 'Asignacion multiplicacion',
+    '/=': 'Asignacion division'
 }
 
-# Diccionario de delimitadores
+# Dictionary for delimiters
 delimitadores = {
     '.': 'Punto',
     ';': 'Punto y coma',
@@ -82,14 +87,16 @@ delimitadores = {
     '}': 'Fin de llave',
     '[': 'Inicio de corchete',
     ']': 'Fin de corchete',
-    '#': 'Inicio de directiva'
+    '#': 'Inicio de directiva',
+    '<': 'Menor que',
+    '>': 'Mayor que'
 }
 
 class Token:
     def __init__(self, tipo, valor, linea):
         self.tipo = tipo
         self.valor = valor
-        self.linea = linea  # Añadir la línea donde se encontró el token
+        self.linea = linea  # Line where the token was found
 
     def __repr__(self):
         return f'Token({self.tipo}, {self.valor}, {self.linea})'
@@ -99,61 +106,83 @@ def lexer(codigo):
     current_token = ''
     i = 0
     linea = 1
-    variables = {}  # Diccionario para almacenar valores de variables
+    variables = {}
 
     while i < len(codigo):
         char = codigo[i]
 
-        # Nueva línea
+        # Handle new lines
         if char == '\n':
             linea += 1
-        # Ignorar comentario de linea 
-        if char == '/' and (codigo[i+1] == '/'):
+            i += 1
+            continue
+
+        # Handle single-line comments
+        if char == '/' and i + 1 < len(codigo) and codigo[i + 1] == '/':
             while i < len(codigo) and codigo[i] != '\n':
                 i += 1
-            i += 1
-            linea +=1
             continue
-        # Ignorar comentario multilinea 
-        if char == '/' and (codigo[i+1] == '*'): 
-            checker = True;  
-            i += 2  # Moverse al inicio del comentario
-            while i < len(codigo) and (checker == True):
-                if codigo[i]=='*' and codigo[i+1] =='/':
-                    checker = False
-                    i += 2
-                    continue
+
+        # Handle multi-line comments
+        if char == '/' and i + 1 < len(codigo) and codigo[i + 1] == '*':
+            i += 2
+            while i < len(codigo) - 1 and not (codigo[i] == '*' and codigo[i + 1] == '/'):
                 if codigo[i] == '\n':
                     linea += 1
                 i += 1
+            i += 2
             continue
-            
-        # Ignorar espacios en blanco
+
+        # Ignore whitespace
         if char.isspace():
             i += 1
             continue
 
-        # Identificadores y literales de cadena
+        # Handle reserved words and identifiers
         if char.isalpha() or char == '_':
             while i < len(codigo) and (codigo[i].isalnum() or codigo[i] == '_'):
                 current_token += codigo[i]
                 i += 1
-            tipo = palabras_reservadas.get(current_token, 'ID') 
+            tipo = palabras_reservadas.get(current_token, 'ID')
             tokens.append(Token(tipo, current_token, linea))
             current_token = ''
             continue
 
-        if char == '"':  # Literal de cadena
-            i += 1  # Moverse más allá de la comilla inicial
+        # Handle multi-character operators (==, !=, <=, >=, <<, >>, etc.)
+        if char in operadores.keys():
+            next_char = codigo[i + 1] if i + 1 < len(codigo) else ''
+            # Check for two-character operators
+            if char + next_char in operadores:
+                tokens.append(Token(operadores[char + next_char], char + next_char, linea))
+                i += 2
+            else:
+                tokens.append(Token(operadores[char], char, linea))
+                i += 1
+            continue
+
+        # Handle delimiters
+        if char in delimitadores:
+            # Special handling for #include
+            if char == '#' and codigo[i:i + 8] == '#include':
+                tokens.append(Token(palabras_reservadas['#include'], '#include', linea))
+                i += 8
+            else:
+                tokens.append(Token(delimitadores[char], char, linea))
+                i += 1
+            continue
+
+        # Handle string literals
+        if char == '"':
+            i += 1
             while i < len(codigo) and codigo[i] != '"':
                 current_token += codigo[i]
                 i += 1
             tokens.append(Token('CADENA', current_token, linea))
             current_token = ''
-            i += 1  # Moverse más allá de la comilla final
+            i += 1
             continue
 
-        # Números
+        # Handle numbers
         if char.isdigit():
             while i < len(codigo) and codigo[i].isdigit():
                 current_token += codigo[i]
@@ -162,46 +191,12 @@ def lexer(codigo):
             current_token = ''
             continue
 
-        # Operadores
-        if char in operadores.keys():
-            if char == '<' and codigo[i+1] == '<':
-                tokens.append(Token('Desplazamiento a la Izquierda', '<<', linea))
-                i += 2
-            else:
-                tokens.append(Token(operadores[char], char, linea))
-                i += 1
-            continue
-        
-        # Delimitadores
-        if char in delimitadores.keys():
-            tokens.append(Token(delimitadores[char], char, linea))
-            i += 1
-            continue
-
-        # Manejo de asignaciones
-        if char == '=' and i + 1 < len(codigo) and codigo[i + 1] != '=':
-            i += 1  # Moverse más allá del '='
-            while i < len(codigo) and codigo[i] not in operadores.keys() and codigo[i] not in delimitadores.keys():
-                current_token += codigo[i]
-                i += 1
-            # Asignar el valor a la variable
-            variable = tokens[-1].valor  # La última variable registrada
-            value = eval(current_token.strip()) if current_token.strip() else '0'  # Evaluar el valor asignado
-            variables[variable] = value  # Guardar el valor en el diccionario
-            tokens.append(Token('ASIGNACION', f'{variable} = {value}', linea))
-            current_token = ''
-            continue
-
-        # Manejo de caracteres no reconocidos
+        # Handle unrecognized characters as errors
         tokens.append(Token('ERROR', char, linea))
         i += 1
 
-    # Agregar valores de variables a la tabla de tokens
-    for token in tokens:
-        if token.tipo == 'ID' and token.valor in variables:
-            token.valor += f' (Valor: {variables[token.valor]})'
-
     return tokens
+
 
 def imprimir_tabla(tokens):
     # Crear una tabla para los símbolos
@@ -222,6 +217,9 @@ class Var:
     def __repr__(self):
         return f'Var({self.name}, {self.value})'
     
+
+
+ #TODO: change it
 def trabajar_variables(tokens):
     length = len(tokens)
     variables = {}

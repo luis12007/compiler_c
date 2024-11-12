@@ -1,165 +1,72 @@
-# LL(1) Parse Table (Sample)
-parse_table = {
-    'Program': {
-        'var': ['var', 'Variables', 'begin', 'Operators', 'end'],
-        '$': None  # End of input
-    },
-    'Variables': {
-        'identifier': ['Variable', ';', 'Variables'],
-        ';': ['ε'],  # Epsilon production
-        'begin': ['ε']
-    },
-    'Variable': {
-        'identifier': ['identifier']
-    },
-    'Operators': {
-        'read': ['Operator', ';', 'Operators'],
-        'write': ['Operator', ';', 'Operators'],
-        'end': ['ε']  # Epsilon production
-    },
-    'Operator': {
-        'read': ['read', '(', 'Variable', ')'],
-        'write': ['write', '(', 'Variable', ')']
-    },
-    'INCLUDEBLOCK': {
-        '->': ['->', 'INCLUDESTATEMENT', 'INCLUDEBLOCK'],
-        '$': ['ε']
-    },
-    'DEFINEBLOCK': {
-        '->': ['->', 'DEFINESTATEMENT', 'DEFINEBLOCK'],
-        '$': ['ε']
-    },
-    'FUNCTIONBLOCK': {
-        '->': ['->', 'FUNCDEC', 'FUNCTIONBLOCK'],
-        '$': ['ε']
-    },
-    'STATEMENT': {
-        'INITLINE': ['INITLINE', 'STATEMENT'],
-        'SWITCHSTATEMENT': ['SWITCHSTATEMENT', 'STATEMENT'],
-        'CONDITIONAL': ['CONDITIONAL', 'STATEMENT'],
-        'LOOPSTATEMENT': ['LOOPSTATEMENT', 'STATEMENT'],
-        'VARCHANGELINE': ['VARCHANGELINE', 'STATEMENT'],
-        'RETURNSTATEMENT': ['RETURNSTATEMENT', 'STATEMENT'],
-        '}': ['ε']
-    },
-    'CONDITION': {
-        'VARNAME': ['VARNAME', 'CONDOPERATOR', 'VARNAME'],
-        'VARVAL': ['VARVAL', 'CONDOPERATOR', 'VARVAL'],
-        '(0 + 1)': ['(0 + 1)'],
-        '(true + false)': ['(true + false)']
-    },
-    'CONDOPERATOR': {
-        '==': ['=='],
-        '<': ['<'],
-        '<=': ['<='],
-        '>': ['>'],
-        '>=': ['>=']
-    },
-    'CONDITIONAL': {
-        'if': ['if', '(', 'CONDITION', ')', '{', 'STATEMENT', '}', 'ELSE']
-    },
-    'ELSE': {
-        'else': ['else', 'CONDITIONAL'],
-        '$': ['ε']
-    },
-    'SWITCHSTATEMENT': {
-        'switch': ['switch', '(', 'VARNAME', ')', '{', 'SWITCHCASELIST', '}']
-    },
-    'SWITCHCASELIST': {
-        'case': ['SWITCHCASE', 'SWITCHCASELIST'],
-        'default': ['default', ':', 'STATEMENT', 'break;'],
-        '}': ['ε']
-    },
-    'SWITCHCASE': {
-        'case': ['case', 'VARVAL', ':', 'STATEMENT', 'break;']
-    },
-    'LOOPSTATEMENT': {
-        'for': ['FORLOOP'],
-        'while': ['WHILELOOP'],
-        'do': ['DOWHILELOOP']
-    },
-    'FORLOOP': {
-        'for': ['for', '(', 'FORVAR', ';', 'CONDITION', ';', 'VARCHANGESTATEMENT', ')', '{', 'STATEMENT', '}']
-    },
-    'WHILELOOP': {
-        'while': ['while', '(', 'CONDITION', ')', '{', 'STATEMENT', '}']
-    },
-    'DOWHILELOOP': {
-        'do': ['do', '{', 'STATEMENT', '}', 'while', '(', 'CONDITION', ')']
-    },
-    'VARNAME': {
-        '[a-zA-Z_]': ['[a-zA-Z_]', '[a-zA-Z0-9_]*']  # Regular expression match for variable names
-    },
-    'INCLUDESTATEMENT': {
-        '#include': ['#include', '<', 'VARNAME', '>'],
-        'STRINGVAL': ['#include', 'STRINGVAL']
-    },
-    'DEFINESTATEMENT': {
-        '#define': ['#define', 'VARNAME', 'VARNAME'],
-        '{': ['#define', 'VARNAME', '{', 'STATEMENT', '}'],
-        'FUNCTION': ['#define', 'FUNCTION']
-    },
-    'RETURNSTATEMENT': {
-        'return': ['return', 'VARVAL', ';'],
-        ';': ['return', ';']
-    },
-    # Additional non-terminals and terminals go here
-}
+class Token:
+    def __init__(self, tipo, valor, linea):
+        self.tipo = tipo  # Token type, e.g., "Tipo de dato int"
+        self.valor = valor  # Actual token value, e.g., "int"
+        self.linea = linea  # Line number in the source code
 
-# This table is partial and serves as a structure. You’ll need to expand it fully based on all productions in your grammar.
+    def __repr__(self):
+        return f"Token({self.tipo}, {self.valor}, Linea: {self.linea})"
 
+def parse(tokens, parse_table):
+    stack = ['$']
+    stack.append('SOURCE')  # Start with the grammar's starting symbol
 
+    tokens.append(Token('$', '$', -1))  # Add end-of-input marker
+    index = 0  # Track the position in the token list
 
-# Parsing function
-def parse(tokens, Token):
-    stack = ['$', 'Program']
-    index = 0
-    tokens.append(Token('$', '$', -1))  # End-of-input marker
+    print("\nStarting Parsing Process:")
+    print(f"Initial Stack: {stack}\n")
 
     while stack:
         top = stack.pop()
         current_token = tokens[index]
-        
-        # Debug output for tracing
-        print(f"Stack: {stack}, Current Token: {current_token.valor} (Type: {current_token.tipo})")
 
-        # Access token attributes directly
-        if current_token.tipo == 'ID':
-            current_token_type = current_token.valor
-            current_token_value = current_token.tipo
-        else:
-            current_token_type = current_token.tipo
-            current_token_value = current_token.valor
+        # Display current parsing state
+        print(f"\nCurrent Stack: {stack}")
+        print(f"Top of Stack: {top}")
+        print(f"Current Token: {current_token.valor} (Type: {current_token.tipo}) at Line: {current_token.linea}")
 
-        if top == current_token_value:  # Terminal match based on token value
-            index += 1
-        elif top in parse_table and current_token_value in parse_table[top]:  # Non-terminal with a rule
-            rule = parse_table[top][current_token_value]
-            if rule != ['ε']:  # Ignore epsilon productions
-                stack.extend(reversed(rule))
+        # Check if the top of the stack is a terminal that matches the current token's value
+        if top == current_token.valor:
+            print(f"Terminal match found: {top} == {current_token.valor}")
+            index += 1  # Move to the next token
+            continue
+
+        # Check if top of stack is a non-terminal
+        elif top in parse_table:
+            print(f"Expanding non-terminal: {top}")
+
+            # Attempt to find the correct rule in the parse table based on the token value
+            token_key = current_token.valor if current_token.valor in parse_table[top] else current_token.tipo
+
+            if token_key in parse_table[top]:
+                rule = parse_table[top][token_key]
+                print(f"  Rule found: {top} -> {rule}")
+
+                # Push the selected rule onto the stack in reverse order, ignoring epsilon
+                if rule != ['ε']:
+                    print(f"  Expanding rule: Pushing {list(reversed(rule))} onto stack")
+                    stack.extend(reversed(rule))
+                else:
+                    print(f"  Epsilon rule encountered: {top} -> ε (No action on stack)")
+            else:
+                # Handle unexpected token error with more context
+                print(f"  Error: No rule for '{top}' with current token '{current_token.valor}' (Type: {current_token.tipo})")
+                raise SyntaxError(
+                    f"Unexpected token '{current_token.valor}' at line {current_token.linea}"
+                )
+
+        # Handle cases where the stack's top element is a terminal but does not match the current token
         else:
-            # Use specific attributes for error message details
+            print(f"Error: Expected '{top}', but got '{current_token.valor}' (Type: {current_token.tipo})")
             raise SyntaxError(
-                f"Unexpected token '{current_token_value}' (type '{current_token_type}') at line {current_token.linea} (position {index})"
+                f"Unexpected token '{current_token.valor}' (type '{current_token.tipo}') at line {current_token.linea}"
             )
 
-    if index == len(tokens) - 1:  # Successfully parsed all tokens
-        return "Parsing completed successfully"
+    # Final check to confirm successful parsing
+    if index == len(tokens) - 1 and not stack:
+        print("\nParsing completed successfully: Syntax correct.")
+        return "yes"
     else:
-        raise SyntaxError("Parsing failed due to incomplete parse")
-
-# Define Token class if not defined
-class Token:
-    def __init__(self, tipo, valor, linea):
-        self.tipo = tipo
-        self.valor = valor
-        self.linea = linea
-
-# Example usage
-# Assume tokens is a list of Token objects generated from lexical analysis
-tokens = [Token('var', 'var', 1), Token('identifier', 'x', 1), Token(';', ';', 1), Token('begin', 'begin', 2), Token('end', 'end', 3)]
-try:
-    result = parse(tokens, Token)
-    print(result)
-except SyntaxError as e:
-    print(e)
+        print("\nParsing ended with issues: Stack or token list not empty.")
+        return "no"
