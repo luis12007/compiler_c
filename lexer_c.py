@@ -92,21 +92,21 @@ delimitadores = {
     '>': 'Mayor que'
 }
 
+import re
 class Token:
     def __init__(self, tipo, valor, linea):
         self.tipo = tipo
         self.valor = valor
-        self.linea = linea  # Line where the token was found
+        self.linea = linea
 
     def __repr__(self):
-        return f'Token({self.tipo}, {self.valor}, {self.linea})'
+        return f"Token({self.tipo}, {self.valor}, Linea: {self.linea})"
 
 def lexer(codigo):
     tokens = []
     current_token = ''
     i = 0
     linea = 1
-    variables = {}
 
     while i < len(codigo):
         char = codigo[i]
@@ -138,20 +138,50 @@ def lexer(codigo):
             i += 1
             continue
 
-        # Handle reserved words and identifiers
+        
+        # Handle #include directive with <...> pattern for libraries
+        if codigo[i:i + 8] == '#include':
+            tokens.append(Token('Directiva de Inclusion', '#include', linea))
+            i += 9  # Move past '#include'
+
+            # Capture the content within <...> as a single ID token
+            if i < len(codigo) and codigo[i] == '<':
+                tokens.append(Token('Menor que', '<', linea))
+                i += 1  # Move past '<'
+                header_name = ''
+
+                while i < len(codigo) and codigo[i] != '>':
+                    
+                    header_name += codigo[i]
+                    i += 1
+
+                if i < len(codigo) and codigo[i] == '>':
+                    # Include '<' and '>' around the ID for full pattern representation
+                    tokens.append(Token( f'{header_name}' , 'VARNAME',linea))
+                    i += 1  # Move past '>'
+                tokens.append(Token('Mayor que', '>', linea))
+            continue
+
+
+        # Handle keywords, VARNAME, and general ID
         if char.isalpha() or char == '_':
             while i < len(codigo) and (codigo[i].isalnum() or codigo[i] == '_'):
                 current_token += codigo[i]
                 i += 1
-            tipo = palabras_reservadas.get(current_token, 'ID')
-            tokens.append(Token(tipo, current_token, linea))
+
+            if re.match(r"^[a-zA-Z_][a-zA-Z0-9_]*\.[a-zA-Z0-9]+$", current_token):
+                tokens.append(Token('ID' ,current_token, linea))  # Specific library names, etc.
+            else:
+                if current_token in palabras_reservadas:
+                    tokens.append(Token("VARNAME", current_token, linea))
+                else:
+                    tokens.append(Token(current_token, 'VARNAME', linea))  # General variable names
             current_token = ''
             continue
 
-        # Handle multi-character operators (==, !=, <=, >=, <<, >>, etc.)
+        # Handle multi-character operators (==, !=, etc.)
         if char in operadores.keys():
             next_char = codigo[i + 1] if i + 1 < len(codigo) else ''
-            # Check for two-character operators
             if char + next_char in operadores:
                 tokens.append(Token(operadores[char + next_char], char + next_char, linea))
                 i += 2
@@ -162,23 +192,7 @@ def lexer(codigo):
 
         # Handle delimiters
         if char in delimitadores:
-            # Special handling for #include
-            if char == '#' and codigo[i:i + 8] == '#include':
-                tokens.append(Token(palabras_reservadas['#include'], '#include', linea))
-                i += 8
-            else:
-                tokens.append(Token(delimitadores[char], char, linea))
-                i += 1
-            continue
-
-        # Handle string literals
-        if char == '"':
-            i += 1
-            while i < len(codigo) and codigo[i] != '"':
-                current_token += codigo[i]
-                i += 1
-            tokens.append(Token('CADENA', current_token, linea))
-            current_token = ''
+            tokens.append(Token(delimitadores[char], char, linea))
             i += 1
             continue
 
