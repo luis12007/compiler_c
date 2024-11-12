@@ -267,8 +267,6 @@ parse_table = {
         "ID": ["VARNAME", "VARIABLE_MODIFICATION"]
     },
 
-    # Updated initialization rules for each type to allow assignment
-    "INITSTATEMENT": [["INTINIT"], ["FLOATINIT"], ["CHARINIT"], ["STRINGINIT"], ["DOUBLEINIT"], ["LONGINIT"], ["SHORTINIT"]],
 
 
     "VARIABLE_MODIFICATION": {
