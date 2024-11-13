@@ -59,6 +59,11 @@ def parse(tokens, parse_table):
             index += 1  # Move to the next token
             continue
 
+        elif top == current_token.tipo:
+            print(f"Terminal match found: {top} == {current_token.tipo}")
+            index += 1  # Move to the next token
+            continue
+
         # Terminal mismatch with error logging
         else:
             print(f"Error: Expected '{top}', but got '{current_token.valor}' (Type: {current_token.tipo})")

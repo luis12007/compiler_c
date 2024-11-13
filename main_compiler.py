@@ -1,5 +1,5 @@
 from lexer_c import lexer, imprimir_tabla, imprimir_variables, trabajar_variables, Token
-from parser import parse
+from parser_c import parse
 
 # Leer el archivo example_one.c
 with open('example_one.c', 'r') as file:
@@ -71,7 +71,8 @@ parse_table = {
     },
 
     "INCLUDESTATEMENT": {
-        "#include": ["#include", "<", "VARNAME", ">"]
+        "#include": ["#include", "<", "VARNAME", "." , "VARNAME", ">"],
+        #"#include": ["#include", "\"", "VARNAME", "." , "VARNAME", "\""]
     },
 
     "DEFINESTATEMENT": {

@@ -245,12 +245,3 @@ def imprimir_variables(variables):
     for var in variables:
         tabla.add_row([var.name, var.value])
     print(tabla)
-
-
-# Leer el archivo example_one.cpp
-with open('example_one.c', 'r') as content:
-    codigo = content.read()
-# Ejecutar el lexer
-tokens = lexer(codigo)
-# Imprimir la tabla de símbolos
-imprimir_tabla(tokens)

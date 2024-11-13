@@ -108,7 +108,7 @@ grammar = {
     "VARNAME": [["[a-zA-Z_][a-zA-Z0-9_]*"]],
     "KEYWORD": [["static"], ["const"], ["volatile"], ["inline"], ["ɛ"]],
 
-    "INCLUDESTATEMENT": [["#include", "<", "VARNAME", ">"], ["#include", "STRINGVAL"]],
+    "INCLUDESTATEMENT": [["#include", "<", "VARNAME", ".", "VARNAME", ">"], ["#include", "\"", "VARNAME", ".", "VARNAME", "\""]],
     "DEFINESTATEMENT": [["#define", "VARNAME", "VARNAME"], ["#define", "VARNAME", "{", "STATEMENT", "}"], ["#define", "FUNCTION"]],
 
     "RETURNSTATEMENT": [["return", "VARVAL", ";"], ["return;"]],
