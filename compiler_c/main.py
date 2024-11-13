@@ -1,4 +1,4 @@
-from lexer import lexer, imprimir_tabla, imprimir_variables, trabajar_variables
+from lexer import lexer, trabajar_variables, Token
 from parser import parse
 from SemanticAnalyzer import analyze_structure
 from code_generator import generate_code , reset_intermediate_code
@@ -20,124 +20,154 @@ parse_table = {
         "#include": ["INCLUDEBLOCK", "DEFINEBLOCK", "FUNCTIONBLOCK", "MAINFUNCTION"],
         "#define": ["INCLUDEBLOCK", "DEFINEBLOCK", "FUNCTIONBLOCK", "MAINFUNCTION"],
         "int": ["INCLUDEBLOCK", "DEFINEBLOCK", "FUNCTIONBLOCK", "MAINFUNCTION"],
-        "void": ["INCLUDEBLOCK", "DEFINEBLOCK", "FUNCTIONBLOCK", "MAINFUNCTION"],
         "float": ["INCLUDEBLOCK", "DEFINEBLOCK", "FUNCTIONBLOCK", "MAINFUNCTION"],
         "char": ["INCLUDEBLOCK", "DEFINEBLOCK", "FUNCTIONBLOCK", "MAINFUNCTION"],
         "string": ["INCLUDEBLOCK", "DEFINEBLOCK", "FUNCTIONBLOCK", "MAINFUNCTION"],
         "double": ["INCLUDEBLOCK", "DEFINEBLOCK", "FUNCTIONBLOCK", "MAINFUNCTION"],
         "long": ["INCLUDEBLOCK", "DEFINEBLOCK", "FUNCTIONBLOCK", "MAINFUNCTION"],
         "short": ["INCLUDEBLOCK", "DEFINEBLOCK", "FUNCTIONBLOCK", "MAINFUNCTION"],
-        "$": ["ε"]
+        "void": ["INCLUDEBLOCK", "DEFINEBLOCK", "FUNCTIONBLOCK", "MAINFUNCTION"]
     },
-
+    
     "INCLUDEBLOCK": {
         "#include": ["INCLUDESTATEMENT", "INCLUDEBLOCK"],
-        "#define": ["ε"],
-        "int": ["ε"],
-        "void": ["ε"],
-        "float": ["ε"],
-        "char": ["ε"],
-        "string": ["ε"],
-        "double": ["ε"],
-        "long": ["ε"],
-        "short": ["ε"],
-        "$": ["ε"]
+        "ɛ": []
     },
-
+    
     "DEFINEBLOCK": {
         "#define": ["DEFINESTATEMENT", "DEFINEBLOCK"],
-        "int": ["ε"],
-        "void": ["ε"],
-        "float": ["ε"],
-        "char": ["ε"],
-        "string": ["ε"],
-        "double": ["ε"],
-        "long": ["ε"],
-        "short": ["ε"],
-        "$": ["ε"]
+        "ɛ": []
     },
-
+    
     "FUNCTIONBLOCK": {
         "int": ["FUNCDEC", "FUNCTIONBLOCK"],
-        "void": ["FUNCDEC", "FUNCTIONBLOCK"],
         "float": ["FUNCDEC", "FUNCTIONBLOCK"],
         "char": ["FUNCDEC", "FUNCTIONBLOCK"],
         "string": ["FUNCDEC", "FUNCTIONBLOCK"],
         "double": ["FUNCDEC", "FUNCTIONBLOCK"],
         "long": ["FUNCDEC", "FUNCTIONBLOCK"],
         "short": ["FUNCDEC", "FUNCTIONBLOCK"],
-        "$": ["ε"]
+        "void": ["FUNCDEC", "FUNCTIONBLOCK"],
+        "ɛ": []
     },
-
-    "INCLUDESTATEMENT": {
-        "#include": ["#include", "<", "VARNAME", ".", "VARNAME", ">"]
-    },
-
-    "DEFINESTATEMENT": {
-        "#define": ["#define", "VARNAME", "VARNAME"],
-        "{": ["#define", "VARNAME", "{", "STATEMENT", "}"],
-        "FUNCTION": ["#define", "FUNCTION"]
-    },
-
+    
     "MAINFUNCTION": {
         "int": ["FUNCTYPE", "main", "(", "INITLIST", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
+        "float": ["FUNCTYPE", "main", "(", "INITLIST", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
+        "char": ["FUNCTYPE", "main", "(", "INITLIST", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
+        "string": ["FUNCTYPE", "main", "(", "INITLIST", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
+        "double": ["FUNCTYPE", "main", "(", "INITLIST", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
+        "long": ["FUNCTYPE", "main", "(", "INITLIST", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
+        "short": ["FUNCTYPE", "main", "(", "INITLIST", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
         "void": ["void", "main", "(", "INITLIST", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"]
     },
-
-    "FUNCDEC": {
-        "int": ["FUNCTYPE", "FUNCTION"],
-        "float": ["FUNCTYPE", "FUNCTION"],
-        "char": ["FUNCTYPE", "FUNCTION"],
-        "string": ["FUNCTYPE", "FUNCTION"],
-        "double": ["FUNCTYPE", "FUNCTION"],
-        "long": ["FUNCTYPE", "FUNCTION"],
-        "short": ["FUNCTYPE", "FUNCTION"],
-        "void": ["FUNCTYPE", "FUNCTION"]
-    },
-
-    "FUNCTION": {
-        "VARNAME": ["VARNAME", "(", "INITLIST", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"]
-    },
-
-    "FUNCTYPE": {
-        "int": ["int"],
-        "float": ["float"],
-        "char": ["char"],
-        "string": ["string"],
-        "double": ["double"],
-        "long": ["long"],
-        "short": ["short"],
-        "void": ["void"]
-    },
-
+    
     "STATEMENT": {
-        "int": ["INITLINE", "STATEMENT"],
-        "float": ["INITLINE", "STATEMENT"],
-        "char": ["INITLINE", "STATEMENT"],
-        "string": ["INITLINE", "STATEMENT"],
-        "double": ["INITLINE", "STATEMENT"],
-        "long": ["INITLINE", "STATEMENT"],
-        "short": ["INITLINE", "STATEMENT"],
-        "switch": ["SWITCHSTATEMENT", "STATEMENT"],
+        "static": ["INITLINE", "STATEMENT"],
+        "const": ["INITLINE", "STATEMENT"],
+        "volatile": ["INITLINE", "STATEMENT"],
+        "inline": ["INITLINE", "STATEMENT"],
         "if": ["CONDITIONAL", "STATEMENT"],
-        "for": ["LOOPSTATEMENT", "STATEMENT"],
+        "switch": ["SWITCHSTATEMENT", "STATEMENT"],
+        "for": ["FORLOOP"],
+        "while": ["WHILELOOP"],
+        "do": ["DOWHILELOOP"],
+        "VARNAME": ["VARCHANGELINE", "STATEMENT"],
         "return": ["RETURNSTATEMENT", "STATEMENT"],
-        "$": ["ε"]
+        "ɛ": []
     },
-    "INITLINE": {
-        "static": ["KEYWORD", "INITSTATEMENT"],
-        "const": ["KEYWORD", "INITSTATEMENT"],
-        "volatile": ["KEYWORD", "INITSTATEMENT"],
-        "inline": ["KEYWORD", "INITSTATEMENT"],
+    
+    "CONDITIONAL": {
+        "if": ["if", "(", "CONDITION", ")", "{", "STATEMENT", "}", "CONDITIONAL_ELSE"]
+    },
+    
+    "CONDITIONAL_ELSE": {
+        "else": ["else", "{", "STATEMENT", "}"],
+        "ɛ": []
+    },
+    
+    "SWITCHSTATEMENT": {
+        "switch": ["switch", "(", "VARNAME", ")", "{", "SWITCHCASELIST", "}"]
+    },
+    
+    "SWITCHCASELIST": {
+        "case": ["SWITCHCASE", "SWITCHCASELIST'", "DEFAULTCASE"],
+        "default": ["SWITCHCASE", "SWITCHCASELIST'", "DEFAULTCASE"]
+    },
+    
+    "SWITCHCASELIST'": {
+        "case": ["SWITCHCASE", "SWITCHCASELIST'"],
+        "ɛ": []
+    },
+    
+    "DEFAULTCASE": {
+        "default": ["default:", "STATEMENT", "break;"]
+    },
+    
+    "LOOPSTATEMENT": {
+        "for": ["FORLOOP"],
+        "while": ["WHILELOOP"],
+        "do": ["DOWHILELOOP"]
+    },
+    
+    "FORLOOP": {
+        "for": ["for", "(", "FORVAR", ";", "CONDITION", ";", "VARCHANGESTATEMENT", ")", "{", "STATEMENT", "}"]
+    },
+    
+    "FORVAR": {
         "int": ["INITSTATEMENT"],
         "float": ["INITSTATEMENT"],
         "char": ["INITSTATEMENT"],
         "string": ["INITSTATEMENT"],
         "double": ["INITSTATEMENT"],
         "long": ["INITSTATEMENT"],
-        "short": ["INITSTATEMENT"]
+        "short": ["INITSTATEMENT"],
+        "VARNAME": ["VARNAME"]
     },
-
+    
+    "WHILELOOP": {
+        "while": ["while", "(", "CONDITION", ")", "{", "STATEMENT", "}"]
+    },
+    
+    "DOWHILELOOP": {
+        "do": ["do", "{", "STATEMENT", "}", "while", "(", "CONDITION", ")"]
+    },
+    
+    "VARNAME": {
+        "[a-zA-Z_][a-zA-Z0-9_]*": ["[a-zA-Z_][a-zA-Z0-9_]*"]
+    },
+    
+    "KEYWORD": {
+        "static": ["static"],
+        "const": ["const"],
+        "volatile": ["volatile"],
+        "inline": ["inline"],
+        "ɛ": []
+    },
+    
+    "INCLUDESTATEMENT": {
+        "#include": ["#include", "<", "VARNAME", ".", "VARNAME", ">"],
+        "#include (quote)": ["#include", "\"", "VARNAME", ".", "VARNAME", "\""]
+    },
+    
+    "DEFINESTATEMENT": {
+        "#define": ["#define", "VARNAME", "VARNAME"],
+        "#define": ["#define", "VARNAME", "{", "STATEMENT", "}"],
+        "#define": ["#define", "FUNCTION"]
+    },
+    
+    "RETURNSTATEMENT": {
+        "return": ["return", "VARVAL", ";"],
+        "return": ["return", ";"]
+    },
+    
+    "INITLINE": {
+        "static": ["KEYWORD", "INITSTATEMENT"],
+        "const": ["KEYWORD", "INITSTATEMENT"],
+        "volatile": ["KEYWORD", "INITSTATEMENT"],
+        "inline": ["KEYWORD", "INITSTATEMENT"]
+    },
+    
     "INITLIST": {
         "int": ["INITSTATEMENT", "INITLIST'"],
         "float": ["INITSTATEMENT", "INITLIST'"],
@@ -145,129 +175,191 @@ parse_table = {
         "string": ["INITSTATEMENT", "INITLIST'"],
         "double": ["INITSTATEMENT", "INITLIST'"],
         "long": ["INITSTATEMENT", "INITLIST'"],
-        "short": ["INITSTATEMENT", "INITLIST'"]
+        "short": ["INITSTATEMENT", "INITLIST'"],
+        "VARNAME": ["INITSTATEMENT", "INITLIST'"]
     },
-
+    
     "INITLIST'": {
-        ",": [",", "INITSTATEMENT", "INITLIST'"],
-        ")": ["ε"],
+        "int": ["INITSTATEMENT", "INITLIST'"],
+        "float": ["INITSTATEMENT", "INITLIST'"],
+        "char": ["INITSTATEMENT", "INITLIST'"],
+        "string": ["INITSTATEMENT", "INITLIST'"],
+        "double": ["INITSTATEMENT", "INITLIST'"],
+        "long": ["INITSTATEMENT", "INITLIST'"],
+        "short": ["INITSTATEMENT", "INITLIST'"],
+        "VARNAME": ["INITSTATEMENT", "INITLIST'"],
+        "ɛ": []
     },
-
-    "CONDITIONAL": {
-        "if": ["if", "(", "CONDITION", ")", "{", "STATEMENT", "}", "CONDITIONAL_ELSE"]
+    
+    "INITSTATEMENT": {
+        "int": ["INTINIT"],
+        "float": ["FLOATINIT"],
+        "char": ["CHARINIT"],
+        "string": ["STRINGINIT"],
+        "double": ["DOUBLEINIT"],
+        "long": ["LONGINIT"],
+        "short": ["SHORTINIT"]
     },
-
-    "CONDITIONAL_ELSE": {
-        "else": ["else", "{", "STATEMENT", "}"],
-        "$": ["ε"]
+    
+    "INTINIT": {
+        "int": ["int", "VARNAME", "INTLIST"],
+        "int": ["int", "VARNAME", "=", "INTVAL", "INTLIST"]
     },
-
-    "LOOPSTATEMENT": {
-        "for": ["FORLOOP"],
-        "while": ["WHILELOOP"],
-        "do": ["DOWHILELOOP"]
+    
+    "FLOATINIT": {
+        "float": ["float", "VARNAME", "FLOATLIST"],
+        "float": ["float", "VARNAME", "=", "FLOATVAL", "FLOATLIST"]
     },
-
-    "FORLOOP": {
-        "for": ["for", "(", "FORVAR", ";", "CONDITION", ";", "VARCHANGESTATEMENT", ")", "{", "STATEMENT", "}"]
+    
+    "CHARINIT": {
+        "char": ["char", "VARNAME", "CHARLIST"],
+        "char": ["char", "VARNAME", "=", "CHARVAL", "CHARLIST"]
     },
-
-    "WHILELOOP": {
-        "while": ["while", "(", "CONDITION", ")", "{", "STATEMENT", "}"]
+    
+    "STRINGINIT": {
+        "string": ["string", "VARNAME", "STRINGLIST"],
+        "string": ["string", "VARNAME", "=", "STRINGVAL", "STRINGLIST"]
     },
-
-    "DOWHILELOOP": {
-        "do": ["do", "{", "STATEMENT", "}", "while", "(", "CONDITION", ")"]
+    
+    "DOUBLEINIT": {
+        "double": ["double", "VARNAME", "DOUBLELIST"],
+        "double": ["double", "VARNAME", "=", "DOUBLEVAL", "DOUBLELIST"]
     },
-
-    "RETURNSTATEMENT": {
-        "return": ["return", "VARVAL", ";"],
-        "$": ["ε"]
+    
+    "LONGINIT": {
+        "long": ["long", "VARNAME", "LONGLIST"],
+        "long": ["long", "VARNAME", "=", "INTVAL", "LONGLIST"]
     },
-
+    
+    "SHORTINIT": {
+        "short": ["short", "VARNAME", "SHORTLIST"],
+        "short": ["short", "VARNAME", "=", "INTVAL", "SHORTLIST"]
+    },
+    
+    "INTLIST": {
+        ",": [",", "VARNAME", "INTLIST"],
+        ",": [",", "VARNAME", "=", "INTVAL", "INTLIST"],
+        "ɛ": []
+    },
+    
+    "FLOATLIST": {
+        ",": [",", "VARNAME", "FLOATLIST"],
+        ",": [",", "VARNAME", "=", "FLOATVAL", "FLOATLIST"],
+        "ɛ": []
+    },
+    
+    "CHARLIST": {
+        ",": [",", "VARNAME", "CHARLIST"],
+        ",": [",", "VARNAME", "=", "CHARVAL", "CHARLIST"],
+        "ɛ": []
+    },
+    
+    "STRINGLIST": {
+        ",": [",", "VARNAME", "STRINGLIST"],
+        ",": [",", "VARNAME", "=", "STRINGVAL", "STRINGLIST"],
+        "ɛ": []
+    },
+    
+    "DOUBLELIST": {
+        ",": [",", "VARNAME", "DOUBLELIST"],
+        ",": [",", "VARNAME", "=", "DOUBLEVAL", "DOUBLELIST"],
+        "ɛ": []
+    },
+    
+    "LONGLIST": {
+        ",": [",", "VARNAME", "LONGLIST"],
+        ",": [",", "VARNAME", "=", "INTVAL", "LONGLIST"],
+        "ɛ": []
+    },
+    
+    "SHORTLIST": {
+        ",": [",", "VARNAME", "SHORTLIST"],
+        ",": [",", "VARNAME", "=", "INTVAL", "SHORTLIST"],
+        "ɛ": []
+    },
+    
     "VARVAL": {
-        "ID": ["ARITH_EXPR"],
+        "VARNAME": ["ARITH_EXPR"],
         "INTVAL": ["ARITH_EXPR"],
-        "FLOATVAL": ["ARITH_EXPR"]
+        "FLOATVAL": ["ARITH_EXPR"],
+        "CHARVAL": ["ARITH_EXPR"],
+        "STRINGVAL": ["ARITH_EXPR"],
+        "DOUBLEVAL": ["ARITH_EXPR"],
+        "(": ["ARITH_EXPR"]
     },
-
+    
     "ARITH_EXPR": {
-        "ID": ["TERM", "ARITH_EXPR'"],
+        "VARNAME": ["TERM", "ARITH_EXPR'"],
         "INTVAL": ["TERM", "ARITH_EXPR'"],
-        "FLOATVAL": ["TERM", "ARITH_EXPR'"]
+        "FLOATVAL": ["TERM", "ARITH_EXPR'"],
+        "CHARVAL": ["TERM", "ARITH_EXPR'"],
+        "STRINGVAL": ["TERM", "ARITH_EXPR'"],
+        "DOUBLEVAL": ["TERM", "ARITH_EXPR'"],
+        "(": ["TERM", "ARITH_EXPR'"]
     },
-
+    
     "ARITH_EXPR'": {
         "+": ["+", "TERM", "ARITH_EXPR'"],
         "-": ["-", "TERM", "ARITH_EXPR'"],
-        "$": ["ε"]
+        "ɛ": []
     },
-
+    
     "TERM": {
-        "ID": ["FACTOR", "TERM'"],
+        "VARNAME": ["FACTOR", "TERM'"],
         "INTVAL": ["FACTOR", "TERM'"],
-        "FLOATVAL": ["FACTOR", "TERM'"]
+        "FLOATVAL": ["FACTOR", "TERM'"],
+        "CHARVAL": ["FACTOR", "TERM'"],
+        "STRINGVAL": ["FACTOR", "TERM'"],
+        "DOUBLEVAL": ["FACTOR", "TERM'"],
+        "(": ["FACTOR", "TERM'"]
     },
-
+    
     "TERM'": {
         "*": ["*", "FACTOR", "TERM'"],
         "/": ["/", "FACTOR", "TERM'"],
-        "$": ["ε"]
+        "ɛ": []
     },
-
+    
     "FACTOR": {
-        "ID": ["VARNAME"],
+        "VARNAME": ["VARNAME"],
         "INTVAL": ["INTVAL"],
         "FLOATVAL": ["FLOATVAL"],
+        "CHARVAL": ["CHARVAL"],
+        "STRINGVAL": ["STRINGVAL"],
+        "DOUBLEVAL": ["DOUBLEVAL"],
         "(": ["(", "ARITH_EXPR", ")"]
     },
-
-    "INTINIT": {
-        "int": ["int", "VARNAME", "INTLIST"],
+    
+    "INTVAL": {
+        "[0-9][0-9]*": ["[0-9][0-9]*"]
     },
-
-    "FLOATINIT": {
-        "float": ["float", "VARNAME", "FLOATLIST"]
+    
+    "FLOATVAL": {
+        "[0-9][0-9]*.[0-9]+": ["[0-9][0-9]*.[0-9]+"],
+        "[0-9][0-9]*f": ["[0-9][0-9]*f"]
     },
-
-    "INTLIST": {
-        ",": [",", "VARNAME", "INTLIST"],
-        "$": ["ε"]
+    
+    "CHARVAL": {
+        "'[a-zA-Z0-9$&+,:;=?@#|'<>.^*()%!-]*'": ["'[a-zA-Z0-9$&+,:;=?@#|'<>.^*()%!-]*'"]
     },
-
-    "FLOATLIST": {
-        ",": [",", "VARNAME", "FLOATLIST"],
-        "$": ["ε"]
+    
+    "STRINGVAL": {
+        "\"[a-zA-Z0-9$&+,:;=?@#|'<>.^*()%!-]*\"": ["\"[a-zA-Z0-9$&+,:;=?@#|'<>.^*()%!-]*\""]
     },
-
-    "SWITCHSTATEMENT": {
-        "switch": ["switch", "(", "VARNAME", ")", "{", "SWITCHCASELIST", "}"]
+    
+    "DOUBLEVAL": {
+        "[0-9][0-9]*.[0-9]*d": ["[0-9][0-9]*.[0-9]*d"],
+        "[0-9][0-9]*.[0-9]*": ["[0-9][0-9]*.[0-9]*"]
     },
-
-    "SWITCHCASELIST": {
-        "case": ["SWITCHCASE", "SWITCHCASELIST'"],
-        "default": ["DEFAULTCASE"]
-    },
-
-    "SWITCHCASELIST'": {
-        "case": ["SWITCHCASE", "SWITCHCASELIST'"],
-        "default": ["ε"]
-    },
-
-    "DEFAULTCASE": {
-        "default": ["default:", "STATEMENT", "break;"]
-    },
-
+    
     "VARCHANGELINE": {
-        "ID": ["VARCHANGESTATEMENT", ";"]
+        "VARNAME": ["VARCHANGESTATEMENT", ";"]
     },
-
+    
     "VARCHANGESTATEMENT": {
-        "ID": ["VARNAME", "VARIABLE_MODIFICATION"]
+        "VARNAME": ["VARNAME", "VARIABLE_MODIFICATION"]
     },
-
-
-
+    
     "VARIABLE_MODIFICATION": {
         "++": ["++"],
         "--": ["--"],
@@ -277,14 +369,36 @@ parse_table = {
         "*=": ["*=", "ARITH_EXPR"],
         "/=": ["/=", "ARITH_EXPR"]
     },
-
-    "KEYWORD": {
-        "static": ["static"],
-        "const": ["const"],
-        "volatile": ["volatile"],
-        "inline": ["inline"]
+    
+    "VAROPLIST": {
+        "ɛ": [],
+        "+": ["PLUS_OPERATION"],
+        "-": ["MINUS_OPERATION"],
+        "*": ["MULTIPLY_OPERATION"],
+        "/": ["DIVIDE_OPERATION"]
+    },
+    
+    "PLUS_OPERATION": {
+        "+": ["+", "VARNAME", "VAROPLIST"],
+        "+": ["+", "ARITH_EXPR", "VAROPLIST"]
+    },
+    
+    "MINUS_OPERATION": {
+        "-": ["-", "VARNAME", "VAROPLIST"],
+        "-": ["-", "ARITH_EXPR", "VAROPLIST"]
+    },
+    
+    "MULTIPLY_OPERATION": {
+        "*": ["*", "VARNAME", "VAROPLIST"],
+        "*": ["*", "ARITH_EXPR", "VAROPLIST"]
+    },
+    
+    "DIVIDE_OPERATION": {
+        "/": ["/", "VARNAME", "VAROPLIST"],
+        "/": ["/", "ARITH_EXPR", "VAROPLIST"]
     }
 }
+
 
 print(parse(tokens,parse_table))
 """ ---------------------------SEMANTICO------------------------------------ """

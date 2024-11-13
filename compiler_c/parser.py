@@ -10,79 +10,67 @@ class Token:
 def parse(tokens, parse_table):
     stack = ['$']
     stack.append('SOURCE')  # Start with the grammar's starting symbol
-
-    tokens.append(Token('$', '$', -1))  # Add end-of-input marker
+    tokens.append(Token('$', '$', -1))  # End-of-input marker
     index = 0  # Track the position in the token list
 
-    print("\nStarting Parsing Process:")
-    print(f"Initial Stack: {stack}\n")
+    print("\nStarting Parsing Process")
+    print(f"Initial Stack: {stack}")
     print(f"Tokens: {tokens}\n")
 
     while stack:
         top = stack.pop()
         current_token = tokens[index]
         
-        # Display current parsing state
+        # Log the current parsing state
         print(f"\nCurrent Stack: {stack}")
         print(f"Top of Stack: {top}")
         print(f"Current Token: {current_token.valor} (Type: {current_token.tipo}) at Line: {current_token.linea}")
 
-        # For non-terminal tracking
-        if top in parse_table:
-            print(f"Expanding non-terminal: {top}")
-
-            # First, try to match by token value
+        if top in parse_table:  # Non-terminal case
             token_key = current_token.valor if current_token.valor in parse_table[top] else current_token.tipo
 
-            # Log the parse table lookup
-            print(f"  Looking up parse table entry for '{top}' with token '{token_key}'")
+            # Log grammar lookup
+            print(f"Looking up parse table entry for non-terminal '{top}' with token '{token_key}'")
 
-            # Try using the token value first
-            if current_token.valor in parse_table[top]:
-                rule = parse_table[top][current_token.valor]
-                print(f"  Rule found by value: {top} -> {rule}")
-                if rule != ['ε']:  # Ignore epsilon productions
-                    print(f"  Expanding rule: Pushing {list(reversed(rule))} onto stack")
+            if token_key in parse_table[top]:
+                rule = parse_table[top][token_key]
+                print(f"Expanding '{top}' -> {rule}")
+                
+                if rule != ['ε']:
                     stack.extend(reversed(rule))
-
-            # If value-based lookup fails, try using token type
-            elif current_token.tipo in parse_table[top]:
-                rule = parse_table[top][current_token.tipo]
-                print(f"  Rule found by type: {top} -> {rule}")
-                if rule != ['ε']:  # Ignore epsilon productions
-                    print(f"  Expanding rule: Pushing {list(reversed(rule))} onto stack")
-                    stack.extend(reversed(rule))
-
-            # If neither value nor type works, raise an error with both attempts
+                else:
+                    print(f"Rule is ε (epsilon), no change to stack")
             else:
-                print(f"  Error: No rule for '{top}' with current token '{current_token.valor}' (Type: {current_token.tipo})")
-                raise SyntaxError(
-                    f"Unexpected token '{current_token.valor}' (type '{current_token.tipo}') at line {current_token.linea}"
+                # Error if no matching rule in the parse table
+                error_message = (
+                    f"Error: No rule for '{top}' with current token '{current_token.valor}' "
+                    f"(Type: '{current_token.tipo}') at line {current_token.linea}."
                 )
-        
-        # Terminal match check
-        elif top == current_token.valor:
-            print(f"Terminal match found by value: {top} == {current_token.valor}")
-            index += 1  # Move to the next token
-            continue
+                print(error_message)
+                raise SyntaxError(error_message)
 
-        # If terminal doesn't match by value, check by type
-        elif top == current_token.tipo:
-            print(f"Terminal match found by type: {top} == {current_token.tipo}")
+        elif top == current_token.valor:  # Terminal match based on value
+            print(f"Terminal match found: {top} == {current_token.valor}")
             index += 1  # Move to the next token
-            continue
 
-        # Terminal mismatch with error logging
+        elif top == current_token.tipo:  # Alternative match based on type if value fails
+            print(f"Alternative type match: {top} == {current_token.tipo}")
+            index += 1  # Move to the next token
+
         else:
-            print(f"Error: Expected '{top}' as either value '{current_token.valor}' or type '{current_token.tipo}'")
-            raise SyntaxError(
-                f"Unexpected token '{current_token.valor}' (type '{current_token.tipo}') at line {current_token.linea}"
+            # Error if terminal or type doesn't match
+            error_message = (
+                f"Error: Expected '{top}', but got '{current_token.valor}' "
+                f"(Type: '{current_token.tipo}') at line {current_token.linea}"
             )
+            print(error_message)
+            raise SyntaxError(error_message)
 
-    # Final success/failure output
+    # Success if stack is empty and all tokens are parsed
     if index == len(tokens) - 1 and not stack:
-        print("\nParsing completed successfully: Syntax correct.")
-        return "yes"
+        print("\nParsing completed successfully: Syntax is correct.")
+        return "Parsing completed successfully"
     else:
-        print("\nParsing ended with issues: Stack or token list not empty.")
-        return "no"
+        error_message = "Parsing ended with issues: Stack or token list not fully processed."
+        print(error_message)
+        raise SyntaxError(error_message)
