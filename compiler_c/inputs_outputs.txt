@@ -1,0 +1,146 @@
+
+""" -----------------------------LEXER-------------------------------------- """
+
+INPUTS
+int a = 1;
+int b = 2;
+print(a + b);
+
+OUTPUT( THE TOKENS TABLE)
+[
+    Token("Tipo de dato int", "int", 1),
+    Token("ID", "a", 1),
+    Token("Asignacion", "=", 1),
+    Token("NUMERO", "1", 1),
+    Token("Punto y coma", ";", 1),
+    Token("Tipo de dato int", "int", 2),
+    Token("ID", "b", 2),
+    Token("Asignacion", "=", 2),
+    Token("NUMERO", "2", 2),
+    Token("Punto y coma", ";", 2),
+    Token("ID", "print", 3),
+    Token("Inicio de paréntesis", "(", 3),
+    Token("ID", "a", 3),
+    Token("Operador suma", "+", 3),
+    Token("ID", "b", 3),
+    Token("Fin de paréntesis", ")", 3),
+    Token("Punto y coma", ";", 3)
+]
+
+OUTPUT 2 (VAR TABLE without context)
+[
+    Variable("a", "int", 1),
+    Variable("b", "int", 2)
+]
+
+
+""" -----------------------------PARSER------------------------------------- """
+INPUT (THE TOKENS)
+[
+    Token("Tipo de dato int", "int", 1),
+    Token("ID", "a", 1),
+    Token("Asignacion", "=", 1),
+    Token("NUMERO", "1", 1),
+    Token("Punto y coma", ";", 1),
+    Token("Tipo de dato int", "int", 2),
+    Token("ID", "b", 2),
+    Token("Asignacion", "=", 2),
+    Token("NUMERO", "2", 2),
+    Token("Punto y coma", ";", 2),
+    Token("ID", "print", 3),
+    Token("Inicio de paréntesis", "(", 3),
+    Token("ID", "a", 3),
+    Token("Operador suma", "+", 3),
+    Token("ID", "b", 3),
+    Token("Fin de paréntesis", ")", 3),
+    Token("Punto y coma", ";", 3)
+]
+
+INPUT 2 (VAR TABLE without context)
+[
+    Variable("a", "int", 1),
+    Variable("b", "int", 2)
+]
+
+OUTPUT
+yes or no
+
+OUTPUT 2 (PARSED TABLE VALIDATED)
+[
+    {"type": "declaration", "name": "a", "var_type": "int", "value": 1},
+    {"type": "declaration", "name": "b", "var_type": "int", "value": 2},
+    {"type": "print", "value": "a + b"}
+]
+
+""" ---------------------------SEMANTICO------------------------------------ """
+INPUT
+[
+    {"type": "declaration", "name": "a", "var_type": "int", "value": 1},
+    {"type": "declaration", "name": "b", "var_type": "int", "value": 2},
+    {"type": "print", "value": "a + b"}
+]
+
+OUTPUT
+yes or no
+
+OUTPUT (PARSED TABLE extra VALIDATED)
+[
+    {"type": "declaration", "name": "a", "var_type": "int", "value": 1},
+    {"type": "declaration", "name": "b", "var_type": "int", "value": 2},
+    {"type": "print", "value": "a + b"}
+]
+
+
+""" ------------------------CODIGO INTERMEDIO------------------------------- """
+INPUT  (PARSED TABLE extra VALIDATED)
+[
+    {"type": "declaration", "name": "a", "var_type": "int", "value": 1},
+    {"type": "declaration", "name": "b", "var_type": "int", "value": 2},
+    {"type": "print", "value": "a + b"}
+]
+
+OUTPUT (Three-Address Code - TAC)
+a = 1
+b = 2
+t0 = a + b
+PRINT t0
+
+""" -------------------------CODIGO OBJETO---------------------------------- """
+INPUT (Three-Address Code - TAC)
+a = 1
+b = 2
+t0 = a + b
+PRINT t0
+
+OUTPUT (Assembly Code)
+LOAD R1, 1         
+STORE R1, a         
+LOAD R2, 2         
+STORE R2, b         
+LOAD R1, a
+LOAD R2, b
+ADD R3, R1, R2     
+STORE R3, t0      
+LOAD R1, t0         
+PRINT R1
+
+necesarry extra step? linker and libraries?
+
+INPUT (Assembly Code)
+LOAD R1, 1         
+STORE R1, a         
+LOAD R2, 2         
+STORE R2, b         
+LOAD R1, a
+LOAD R2, b
+ADD R3, R1, R2     
+STORE R3, t0      
+LOAD R1, t0         
+PRINT R1
+
+OUTPUT (Machine Code) 
+001001
+01001
+010101001
+01001001
+10101010101
