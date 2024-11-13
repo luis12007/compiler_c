@@ -1,5 +1,5 @@
 from lexer import lexer, trabajar_variables, Token
-from parser import parse
+from parser_tokens import parse
 from SemanticAnalyzer import analyze_structure
 from code_generator import generate_code , reset_intermediate_code
 from object_code_generator import generate_object_code, print_object_code, reset_object_code
