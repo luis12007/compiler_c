@@ -277,6 +277,4 @@ def imprimir_variables(variables):
         tabla.add_row([var.tipo,var.name, var.value])
     print(tabla)
 
-""" to binary if it is neccesary """
-
 

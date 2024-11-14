@@ -16,6 +16,7 @@ variables = trabajar_variables(tokens)
 """ -----------------------------PARSER------------------------------------- """
 # Parsear el código fuente
 parse_table = {
+    # Existing entries (# means comment and edditions) 
     "SOURCE": {
         "#include": ["INCLUDEBLOCK", "DEFINEBLOCK", "FUNCTIONBLOCK", "MAINFUNCTION"],
         "#define": ["INCLUDEBLOCK", "DEFINEBLOCK", "FUNCTIONBLOCK", "MAINFUNCTION"],
@@ -29,13 +30,31 @@ parse_table = {
         "void": ["INCLUDEBLOCK", "DEFINEBLOCK", "FUNCTIONBLOCK", "MAINFUNCTION"]
     },
     
+    # added voids
     "INCLUDEBLOCK": {
         "#include": ["INCLUDESTATEMENT", "INCLUDEBLOCK"],
-        "ɛ": []
+        "int": ["ɛ"],
+        "float": ["ɛ"],
+        "char": ["ɛ"],
+        "string": ["ɛ"],
+        "double": ["ɛ"],
+        "long": ["ɛ"],
+        "short": ["ɛ"],
+        "void": ["ɛ"],
+        "#define": ["ɛ"] 
     },
     
+    # added voids
     "DEFINEBLOCK": {
         "#define": ["DEFINESTATEMENT", "DEFINEBLOCK"],
+        "int": ["ɛ"],
+        "float": ["ɛ"],
+        "char": ["ɛ"],
+        "string": ["ɛ"],
+        "double": ["ɛ"],
+        "long": ["ɛ"],
+        "short": ["ɛ"],
+        "void": ["ɛ"],
         "ɛ": []
     },
     
@@ -50,6 +69,34 @@ parse_table = {
         "void": ["FUNCDEC", "FUNCTIONBLOCK"],
         "ɛ": []
     },
+
+    # New rules for FUNCDEC, FUNCTYPE, and FUNCTION they were missing
+    "FUNCDEC": {
+        "int": ["FUNCTYPE", "FUNCTION"],
+        "float": ["FUNCTYPE", "FUNCTION"],
+        "char": ["FUNCTYPE", "FUNCTION"],
+        "string": ["FUNCTYPE", "FUNCTION"],
+        "double": ["FUNCTYPE", "FUNCTION"],
+        "long": ["FUNCTYPE", "FUNCTION"],
+        "short": ["FUNCTYPE", "FUNCTION"],
+        "void": ["FUNCTYPE", "FUNCTION"]
+    },
+    
+    "FUNCTYPE": {
+        "int": ["int"],
+        "float": ["float"],
+        "char": ["char"],
+        "string": ["string"],
+        "double": ["double"],
+        "long": ["long"],
+        "short": ["short"],
+        "void": ["void"]
+    },
+    
+    "FUNCTION": {
+        "VARNAME": ["VARNAME", "(", "INITLIST", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"]
+    },
+    
     
     "MAINFUNCTION": {
         "int": ["FUNCTYPE", "main", "(", "INITLIST", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
@@ -62,6 +109,7 @@ parse_table = {
         "void": ["void", "main", "(", "INITLIST", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"]
     },
     
+    # Changed to allow for multiple statements like int, float, char, etc.
     "STATEMENT": {
         "static": ["INITLINE", "STATEMENT"],
         "const": ["INITLINE", "STATEMENT"],
@@ -72,19 +120,13 @@ parse_table = {
         "for": ["FORLOOP"],
         "while": ["WHILELOOP"],
         "do": ["DOWHILELOOP"],
+        "int": ["INITLIST", "STATEMENT"],    # Added int for variable declaration # TODO: add more
         "VARNAME": ["VARCHANGELINE", "STATEMENT"],
         "return": ["RETURNSTATEMENT", "STATEMENT"],
-        "ɛ": []
+        "ɛ": [],                           # Allow the list to end on semicolon
     },
     
-    "CONDITIONAL": {
-        "if": ["if", "(", "CONDITION", ")", "{", "STATEMENT", "}", "CONDITIONAL_ELSE"]
-    },
-    
-    "CONDITIONAL_ELSE": {
-        "else": ["else", "{", "STATEMENT", "}"],
-        "ɛ": []
-    },
+
     
     "SWITCHSTATEMENT": {
         "switch": ["switch", "(", "VARNAME", ")", "{", "SWITCHCASELIST", "}"]
@@ -110,8 +152,51 @@ parse_table = {
         "do": ["DOWHILELOOP"]
     },
     
+    #TODO: ADD CONDITION TO CURRENT LL1 GRAMMAR
     "FORLOOP": {
         "for": ["for", "(", "FORVAR", ";", "CONDITION", ";", "VARCHANGESTATEMENT", ")", "{", "STATEMENT", "}"]
+    },
+
+    #Added CONDITION FOR 
+    "CONDITION": {
+        "VARNAME": ["SIMPLE_CONDITION"],
+        "(": ["LOGICAL_CONDITION"],
+        "!": ["NEGATION"]
+    },
+
+    "SIMPLE_CONDITION": {
+        "VARNAME": ["VARNAME", "CONDOPERATOR", "VARNAME"],
+        "VARVAL": ["VARNAME", "CONDOPERATOR", "VARVAL", "VARVAL", "CONDOPERATOR", "VARNAME", "VARVAL", "CONDOPERATOR", "VARVAL"]
+    },
+
+    "LOGICAL_CONDITION": {
+        "(": ["(", "LOGICAL_EXPR", ")"]
+    },
+
+    "LOGICAL_EXPR": {
+        "0": ["LOGICAL_VAL", "+", "LOGICAL_VAL"],
+        "1": ["LOGICAL_VAL", "+", "LOGICAL_VAL"],
+        "true": ["LOGICAL_VAL", "+", "LOGICAL_VAL"],
+        "false": ["LOGICAL_VAL", "+", "LOGICAL_VAL"]
+    },
+
+    "LOGICAL_VAL": {
+        "0": ["0"],
+        "1": ["1"],
+        "true": ["true"],
+        "false": ["false"]
+    },
+
+    "NEGATION": {
+        "!": ["!", "CONDITION"]
+    },
+
+    "CONDOPERATOR": {
+        "==": ["=="],
+        "<": ["<"],
+        "<=": ["<="],
+        ">": [">"],
+        ">=": [">="]
     },
     
     "FORVAR": {
@@ -134,8 +219,8 @@ parse_table = {
     },
     
     "VARNAME": {
-        "[a-zA-Z_][a-zA-Z0-9_]*": ["[a-zA-Z_][a-zA-Z0-9_]*"]
-    },
+    "[a-zA-Z_][a-zA-Z0-9_]*": ["ε"]
+    },  
     
     "KEYWORD": {
         "static": ["static"],
@@ -168,6 +253,7 @@ parse_table = {
         "inline": ["KEYWORD", "INITSTATEMENT"]
     },
     
+
     "INITLIST": {
         "int": ["INITSTATEMENT", "INITLIST'"],
         "float": ["INITSTATEMENT", "INITLIST'"],
@@ -176,19 +262,15 @@ parse_table = {
         "double": ["INITSTATEMENT", "INITLIST'"],
         "long": ["INITSTATEMENT", "INITLIST'"],
         "short": ["INITSTATEMENT", "INITLIST'"],
-        "VARNAME": ["INITSTATEMENT", "INITLIST'"]
+        "ɛ": []
     },
     
+    # Shrinked 
     "INITLIST'": {
-        "int": ["INITSTATEMENT", "INITLIST'"],
-        "float": ["INITSTATEMENT", "INITLIST'"],
-        "char": ["INITSTATEMENT", "INITLIST'"],
-        "string": ["INITSTATEMENT", "INITLIST'"],
-        "double": ["INITSTATEMENT", "INITLIST'"],
-        "long": ["INITSTATEMENT", "INITLIST'"],
-        "short": ["INITSTATEMENT", "INITLIST'"],
-        "VARNAME": ["INITSTATEMENT", "INITLIST'"],
-        "ɛ": []
+        ",": ["INITSTATEMENT", "INITLIST'"],  # Continue with additional declarations
+        ")": ["ɛ"],
+        ";": ["ɛ"],                             # Allow the list to end on semicolon
+        "ɛ": []  # Allows the parameter list to end without requiring assignment
     },
     
     "INITSTATEMENT": {
@@ -201,11 +283,30 @@ parse_table = {
         "short": ["SHORTINIT"]
     },
     
+
     "INTINIT": {
-        "int": ["int", "VARNAME", "INTLIST"],
-        "int": ["int", "VARNAME", "=", "INTVAL", "INTLIST"]
+        "int": ["int", "VARNAME", "INTLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT"],
+        ";": ["ɛ"],                             # Allow the list to end on semicolon
+    },
+
+    # Added `INTLIST_WITH_ASSIGNMENT` to handle cases with initial assignment
+    "INTLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT": {
+        "=": ["=", "INTVAL", "INTLIST"],  # Allow assignment
+        ",": ["INTLIST"],                 # Continue declaration list without assignment
+        ")": ["ɛ"],                       # Recognize end of parameter list in functions
+        "ɛ": []                           # Allow an empty list if no assignment or additional items
+    },
+
+    # allow ; to end the list
+    "INTLIST": {
+        ",": [",", "VARNAME", "INTLIST"],            # Additional declarations without assignment
+        "=": [",", "VARNAME", "=", "INTVAL", "INTLIST"],  # Additional declarations with assignment
+        ";": ["ɛ"],                             # Allow the list to end on semicolon
+        "ɛ": []                                      # Allows the list to end without further entries
+        
     },
     
+    #TODO: change for each one of them
     "FLOATINIT": {
         "float": ["float", "VARNAME", "FLOATLIST"],
         "float": ["float", "VARNAME", "=", "FLOATVAL", "FLOATLIST"]
@@ -236,11 +337,6 @@ parse_table = {
         "short": ["short", "VARNAME", "=", "INTVAL", "SHORTLIST"]
     },
     
-    "INTLIST": {
-        ",": [",", "VARNAME", "INTLIST"],
-        ",": [",", "VARNAME", "=", "INTVAL", "INTLIST"],
-        "ɛ": []
-    },
     
     "FLOATLIST": {
         ",": [",", "VARNAME", "FLOATLIST"],

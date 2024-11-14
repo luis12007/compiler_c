@@ -1,8 +1,10 @@
+import re
+
 class Token:
     def __init__(self, tipo, valor, linea):
-        self.tipo = tipo  # Token type, e.g., "Tipo de dato int"
-        self.valor = valor  # Actual token value, e.g., "int"
-        self.linea = linea  # Line number in the source code
+        self.tipo = tipo  # Token type
+        self.valor = valor  # Token value
+        self.linea = linea  # Line number
 
     def __repr__(self):
         return f"Token({self.tipo}, {self.valor}, Linea: {self.linea})"
@@ -10,67 +12,82 @@ class Token:
 def parse(tokens, parse_table):
     stack = ['$']
     stack.append('SOURCE')  # Start with the grammar's starting symbol
+
     tokens.append(Token('$', '$', -1))  # End-of-input marker
     index = 0  # Track the position in the token list
 
-    print("\nStarting Parsing Process")
-    print(f"Initial Stack: {stack}")
+    # Precompile regex patterns from the parse table for only the non-terminals that are regex-based
+    regex_patterns = {
+        non_terminal: {pattern: re.compile(pattern) for pattern in parse_table[non_terminal] if "[" in pattern}
+        for non_terminal in parse_table
+    }
+
+    print("\nStarting Parsing Process:")
+    print(f"Initial Stack: {stack}\n")
     print(f"Tokens: {tokens}\n")
 
     while stack:
         top = stack.pop()
         current_token = tokens[index]
-        
-        # Log the current parsing state
+
         print(f"\nCurrent Stack: {stack}")
         print(f"Top of Stack: {top}")
         print(f"Current Token: {current_token.valor} (Type: {current_token.tipo}) at Line: {current_token.linea}")
 
-        if top in parse_table:  # Non-terminal case
-            token_key = current_token.valor if current_token.valor in parse_table[top] else current_token.tipo
+        # Handle semicolon within `STATEMENT` by skipping it
+        if top == "INITLIST'" and current_token.valor == ";":
+            print("Skipping semicolon within STATEMENT context.")
+            index += 1
+            continue
+        
+        # Check if `top` is a regex-based non-terminal
+        if top in regex_patterns and regex_patterns[top]:  # Only attempt regex if patterns exist for this non-terminal
+            matched = False
+            for pattern, compiled_regex in regex_patterns[top].items():
+                if compiled_regex.fullmatch(current_token.valor):
+                    print(f"Regex match found for '{top}' pattern '{pattern}' with token '{current_token.valor}'")
+                    matched = True
+                    index += 1  # Move to the next token
+                    break
 
-            # Log grammar lookup
-            print(f"Looking up parse table entry for non-terminal '{top}' with token '{token_key}'")
+            if matched:
+                continue
+            else:
+                print(f"Error: No matching regex rule for '{top}' with token '{current_token.valor}'")
+                raise SyntaxError(
+                    f"Unexpected token '{current_token.valor}' (type '{current_token.tipo}') at line {current_token.linea}"
+                )
+
+        # Non-regex non-terminal handling
+        elif top in parse_table:
+            token_key = current_token.valor if current_token.valor in parse_table[top] else current_token.tipo
 
             if token_key in parse_table[top]:
                 rule = parse_table[top][token_key]
-                print(f"Expanding '{top}' -> {rule}")
-                
-                if rule != ['ε']:
+                print(f"Rule found: {top} -> {rule}")
+                if rule != ['ɛ']:
+                    print(f"Expanding rule: Pushing {list(reversed(rule))} onto stack")
                     stack.extend(reversed(rule))
-                else:
-                    print(f"Rule is ε (epsilon), no change to stack")
             else:
-                # Error if no matching rule in the parse table
-                error_message = (
-                    f"Error: No rule for '{top}' with current token '{current_token.valor}' "
-                    f"(Type: '{current_token.tipo}') at line {current_token.linea}."
+                print(f"Error: No rule for '{top}' with current token '{current_token.valor}' (Type: '{current_token.tipo}')")
+                raise SyntaxError(
+                    f"Unexpected token '{current_token.valor}' (type '{current_token.tipo}') at line {current_token.linea}"
                 )
-                print(error_message)
-                raise SyntaxError(error_message)
 
-        elif top == current_token.valor:  # Terminal match based on value
+        elif top == current_token.valor:
             print(f"Terminal match found: {top} == {current_token.valor}")
             index += 1  # Move to the next token
-
-        elif top == current_token.tipo:  # Alternative match based on type if value fails
-            print(f"Alternative type match: {top} == {current_token.tipo}")
-            index += 1  # Move to the next token
+            continue
 
         else:
-            # Error if terminal or type doesn't match
-            error_message = (
-                f"Error: Expected '{top}', but got '{current_token.valor}' "
-                f"(Type: '{current_token.tipo}') at line {current_token.linea}"
+            print(f"Error: Expected '{top}', but got '{current_token.valor}' (Type: {current_token.tipo})")
+            raise SyntaxError(
+                f"Unexpected token '{current_token.valor}' (type '{current_token.tipo}') at line {current_token.linea}"
             )
-            print(error_message)
-            raise SyntaxError(error_message)
 
-    # Success if stack is empty and all tokens are parsed
     if index == len(tokens) - 1 and not stack:
-        print("\nParsing completed successfully: Syntax is correct.")
-        return "Parsing completed successfully"
+        print("\nParsing completed successfully: Syntax correct.")
+        return "yes"
     else:
-        error_message = "Parsing ended with issues: Stack or token list not fully processed."
-        print(error_message)
-        raise SyntaxError(error_message)
+        print("\nParsing ended with issues: Stack or token list not empty.")
+        return "no"
