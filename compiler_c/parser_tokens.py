@@ -35,7 +35,7 @@ def parse(tokens, parse_table):
         print(f"Current Token: {current_token.valor} (Type: {current_token.tipo}) at Line: {current_token.linea}")
 
         # Handle semicolon within `STATEMENT` by skipping it
-        if top == "INITLIST'" and current_token.valor == ";":
+        if top == "INITLIST'" and current_token.valor == ";" :
             print("Skipping semicolon within STATEMENT context.")
             index += 1
             continue
@@ -85,9 +85,12 @@ def parse(tokens, parse_table):
                 f"Unexpected token '{current_token.valor}' (type '{current_token.tipo}') at line {current_token.linea}"
             )
 
-    if index == len(tokens) - 1 and not stack:
+    if index == len(tokens) and not stack:
         print("\nParsing completed successfully: Syntax correct.")
         return "yes"
     else:
+        print(stack)
+        print(index)
+        print(len(tokens))
         print("\nParsing ended with issues: Stack or token list not empty.")
         return "no"

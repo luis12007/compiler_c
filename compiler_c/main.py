@@ -27,7 +27,8 @@ parse_table = {
         "double": ["INCLUDEBLOCK", "DEFINEBLOCK", "FUNCTIONBLOCK", "MAINFUNCTION"],
         "long": ["INCLUDEBLOCK", "DEFINEBLOCK", "FUNCTIONBLOCK", "MAINFUNCTION"],
         "short": ["INCLUDEBLOCK", "DEFINEBLOCK", "FUNCTIONBLOCK", "MAINFUNCTION"],
-        "void": ["INCLUDEBLOCK", "DEFINEBLOCK", "FUNCTIONBLOCK", "MAINFUNCTION"]
+        "void": ["INCLUDEBLOCK", "DEFINEBLOCK", "FUNCTIONBLOCK", "MAINFUNCTION"],
+        "$": ["ɛ"]
     },
     
     # added voids
@@ -41,7 +42,7 @@ parse_table = {
         "long": ["ɛ"],
         "short": ["ɛ"],
         "void": ["ɛ"],
-        "#define": ["ɛ"] 
+        "#define": ["ɛ"],
     },
     
     # added voids
@@ -58,6 +59,7 @@ parse_table = {
         "ɛ": []
     },
     
+    # added "$":["ɛ"]
     "FUNCTIONBLOCK": {
         "int": ["FUNCDEC", "FUNCTIONBLOCK"],
         "float": ["FUNCDEC", "FUNCTIONBLOCK"],
@@ -67,7 +69,8 @@ parse_table = {
         "long": ["FUNCDEC", "FUNCTIONBLOCK"],
         "short": ["FUNCDEC", "FUNCTIONBLOCK"],
         "void": ["FUNCDEC", "FUNCTIONBLOCK"],
-        "ɛ": []
+        "ɛ": [],
+        "$":["ɛ"]
     },
 
     # New rules for FUNCDEC, FUNCTYPE, and FUNCTION they were missing
@@ -97,7 +100,7 @@ parse_table = {
         "VARNAME": ["VARNAME", "(", "INITLIST", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"]
     },
     
-    
+    # added "$":["ɛ"]
     "MAINFUNCTION": {
         "int": ["FUNCTYPE", "main", "(", "INITLIST", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
         "float": ["FUNCTYPE", "main", "(", "INITLIST", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
@@ -106,7 +109,8 @@ parse_table = {
         "double": ["FUNCTYPE", "main", "(", "INITLIST", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
         "long": ["FUNCTYPE", "main", "(", "INITLIST", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
         "short": ["FUNCTYPE", "main", "(", "INITLIST", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
-        "void": ["void", "main", "(", "INITLIST", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"]
+        "void": ["void", "main", "(", "INITLIST", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
+        "$":["ɛ"]
     },
     
     # Changed to allow for multiple statements like int, float, char, etc.
@@ -120,10 +124,17 @@ parse_table = {
         "for": ["FORLOOP"],
         "while": ["WHILELOOP"],
         "do": ["DOWHILELOOP"],
-        "int": ["INITLIST", "STATEMENT"],    # Added int for variable declaration # TODO: add more
+        "int": ["INITLIST", "STATEMENT"],   
+        "float": ["INITLIST", "STATEMENT"],   
+        "double": ["INITLIST", "STATEMENT"],   
+        "long": ["INITLIST", "STATEMENT"],   
+        "short": ["INITLIST", "STATEMENT"],   
+        "char": ["INITLIST", "STATEMENT"],   
+        "string": ["INITLIST", "STATEMENT"],   
         "VARNAME": ["VARCHANGELINE", "STATEMENT"],
         "return": ["RETURNSTATEMENT", "STATEMENT"],
-        "ɛ": [],                           # Allow the list to end on semicolon
+        "ɛ": [],                               # Allow the list to end on semicolon
+        "}": ["ɛ"]
     },
     
 
@@ -226,10 +237,23 @@ parse_table = {
         "#define": ["#define", "FUNCTION"]
     },
     
+    # CHANGED
     "RETURNSTATEMENT": {
-        "return": ["return", "VARVAL", ";"],
-        "return": ["return", ";"]
+    "return": ["return", "OPTIONAL_VARVAL", ";"],
+    "}": ["ɛ"]                    
     },
+
+    "OPTIONAL_VARVAL": {
+    "VARNAME": ["ARITH_EXPR"],    
+    "INTVAL": ["ARITH_EXPR"],       
+    "FLOATVAL": ["ARITH_EXPR"],    
+    "CHARVAL": ["ARITH_EXPR"],      
+    "STRINGVAL": ["ARITH_EXPR"],   
+    "DOUBLEVAL": ["ARITH_EXPR"],      
+    "(": ["ARITH_EXPR"],             
+    "ɛ": [],
+    ";": ["ɛ"]                    
+},
     
     "INITLINE": {
         "static": ["KEYWORD", "INITSTATEMENT"],
@@ -247,7 +271,8 @@ parse_table = {
         "double": ["INITSTATEMENT", "INITLIST'"],
         "long": ["INITSTATEMENT", "INITLIST'"],
         "short": ["INITSTATEMENT", "INITLIST'"],
-        "ɛ": []
+        "ɛ": [],
+        ")": ["ɛ"]
     },
     
     # Shrinked 
@@ -269,93 +294,157 @@ parse_table = {
     },
     
 
+    # INTINIT updated
     "INTINIT": {
         "int": ["int", "VARNAME", "INTLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT"],
-        ";": ["ɛ"],                             # Allow the list to end on semicolon
-    },
-
-    # Added `INTLIST_WITH_ASSIGNMENT` to handle cases with initial assignment
-    "INTLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT": {
-        "=": ["=", "INTVAL", "INTLIST"],  # Allow assignment
-        ",": ["INTLIST"],                 # Continue declaration list without assignment
-        ")": ["ɛ"],                       # Recognize end of parameter list in functions
-        "ɛ": []                           # Allow an empty list if no assignment or additional items
-    },
-
-    # allow ; to end the list
-    "INTLIST": {
-        ",": [",", "VARNAME", "INTLIST"],            # Additional declarations without assignment
-        "=": [",", "VARNAME", "=", "INTVAL", "INTLIST"],  # Additional declarations with assignment
-        ";": ["ɛ"],                             # Allow the list to end on semicolon
-        "ɛ": []                                      # Allows the list to end without further entries
-        
+        ";": ["ɛ"]  # Allow the list to end on semicolon
     },
     
-    #TODO: change for each one of them
+    # FLOATINIT updated
     "FLOATINIT": {
-        "float": ["float", "VARNAME", "FLOATLIST"],
-        "float": ["float", "VARNAME", "=", "FLOATVAL", "FLOATLIST"]
+        "float": ["float", "VARNAME", "FLOATLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT"],
+        ";": ["ɛ"]
     },
     
+    # CHARINIT updated
     "CHARINIT": {
-        "char": ["char", "VARNAME", "CHARLIST"],
-        "char": ["char", "VARNAME", "=", "CHARVAL", "CHARLIST"]
+        "char": ["char", "VARNAME", "CHARLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT"],
+        ";": ["ɛ"]
     },
     
+    # STRINGINIT updated
     "STRINGINIT": {
-        "string": ["string", "VARNAME", "STRINGLIST"],
-        "string": ["string", "VARNAME", "=", "STRINGVAL", "STRINGLIST"]
+        "string": ["string", "VARNAME", "STRINGLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT"],
+        ";": ["ɛ"]
     },
     
+    # DOUBLEINIT updated
     "DOUBLEINIT": {
-        "double": ["double", "VARNAME", "DOUBLELIST"],
-        "double": ["double", "VARNAME", "=", "DOUBLEVAL", "DOUBLELIST"]
+        "double": ["double", "VARNAME", "DOUBLELIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT"],
+        ";": ["ɛ"]
     },
     
+    # LONGINIT updated
     "LONGINIT": {
-        "long": ["long", "VARNAME", "LONGLIST"],
-        "long": ["long", "VARNAME", "=", "INTVAL", "LONGLIST"]
+        "long": ["long", "VARNAME", "LONGLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT"],
+        ";": ["ɛ"]
     },
     
+    # SHORTINIT updated
     "SHORTINIT": {
-        "short": ["short", "VARNAME", "SHORTLIST"],
-        "short": ["short", "VARNAME", "=", "INTVAL", "SHORTLIST"]
+        "short": ["short", "VARNAME", "SHORTLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT"],
+        ";": ["ɛ"]
     },
     
+    # INTLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT
+    "INTLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT": {
+        "=": ["=", "INTVAL", "INTLIST"],
+        ",": ["INTLIST"],
+        ")": ["ɛ"],
+        "ɛ": []
+    },
     
+    # FLOATLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT
+    "FLOATLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT": {
+        "=": ["=", "FLOATVAL", "FLOATLIST"],
+        ",": ["FLOATLIST"],
+        ")": ["ɛ"],
+        "ɛ": []
+    },
+    
+    # CHARLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT
+    "CHARLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT": {
+        "=": ["=", "CHARVAL", "CHARLIST"],
+        ",": ["CHARLIST"],
+        ")": ["ɛ"],
+        "ɛ": []
+    },
+    
+    # STRINGLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT
+    "STRINGLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT": {
+        "=": ["=", "STRINGVAL", "STRINGLIST"],
+        ",": ["STRINGLIST"],
+        ")": ["ɛ"],
+        "ɛ": []
+    },
+    
+    # DOUBLELIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT
+    "DOUBLELIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT": {
+        "=": ["=", "DOUBLEVAL", "DOUBLELIST"],
+        ",": ["DOUBLELIST"],
+        ")": ["ɛ"],
+        "ɛ": []
+    },
+    
+    # LONGLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT
+    "LONGLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT": {
+        "=": ["=", "INTVAL", "LONGLIST"],
+        ",": ["LONGLIST"],
+        ")": ["ɛ"],
+        "ɛ": []
+    },
+    
+    # SHORTLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT
+    "SHORTLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT": {
+        "=": ["=", "INTVAL", "SHORTLIST"],
+        ",": ["SHORTLIST"],
+        ")": ["ɛ"],
+        "ɛ": []
+    },
+    
+    # INTLIST with semicolon handling
+    "INTLIST": {
+        ",": [",", "VARNAME", "INTLIST"],
+        "=": [",", "VARNAME", "=", "INTVAL", "INTLIST"],
+        ";": ["ɛ"],
+        "ɛ": []
+    },
+    
+    # FLOATLIST with semicolon handling
     "FLOATLIST": {
         ",": [",", "VARNAME", "FLOATLIST"],
-        ",": [",", "VARNAME", "=", "FLOATVAL", "FLOATLIST"],
+        "=": [",", "VARNAME", "=", "FLOATVAL", "FLOATLIST"],
+        ";": ["ɛ"],
         "ɛ": []
     },
     
+    # CHARLIST with semicolon handling
     "CHARLIST": {
         ",": [",", "VARNAME", "CHARLIST"],
-        ",": [",", "VARNAME", "=", "CHARVAL", "CHARLIST"],
+        "=": [",", "VARNAME", "=", "CHARVAL", "CHARLIST"],
+        ";": ["ɛ"],
         "ɛ": []
     },
     
+    # STRINGLIST with semicolon handling
     "STRINGLIST": {
         ",": [",", "VARNAME", "STRINGLIST"],
-        ",": [",", "VARNAME", "=", "STRINGVAL", "STRINGLIST"],
+        "=": [",", "VARNAME", "=", "STRINGVAL", "STRINGLIST"],
+        ";": ["ɛ"],
         "ɛ": []
     },
     
+    # DOUBLELIST with semicolon handling
     "DOUBLELIST": {
         ",": [",", "VARNAME", "DOUBLELIST"],
-        ",": [",", "VARNAME", "=", "DOUBLEVAL", "DOUBLELIST"],
+        "=": [",", "VARNAME", "=", "DOUBLEVAL", "DOUBLELIST"],
+        ";": ["ɛ"],
         "ɛ": []
     },
     
+    # LONGLIST with semicolon handling
     "LONGLIST": {
         ",": [",", "VARNAME", "LONGLIST"],
-        ",": [",", "VARNAME", "=", "INTVAL", "LONGLIST"],
+        "=": [",", "VARNAME", "=", "INTVAL", "LONGLIST"],
+        ";": ["ɛ"],
         "ɛ": []
     },
     
+    # SHORTLIST with semicolon handling
     "SHORTLIST": {
         ",": [",", "VARNAME", "SHORTLIST"],
-        ",": [",", "VARNAME", "=", "INTVAL", "SHORTLIST"],
+        "=": [",", "VARNAME", "=", "INTVAL", "SHORTLIST"],
+        ";": ["ɛ"],
         "ɛ": []
     },
     
@@ -382,7 +471,8 @@ parse_table = {
     "ARITH_EXPR'": {
         "+": ["+", "TERM", "ARITH_EXPR'"],
         "-": ["-", "TERM", "ARITH_EXPR'"],
-        "ɛ": []
+        "ɛ": [],
+        ";": ["ɛ"]
     },
     
     "TERM": {
@@ -392,13 +482,16 @@ parse_table = {
         "CHARVAL": ["FACTOR", "TERM'"],
         "STRINGVAL": ["FACTOR", "TERM'"],
         "DOUBLEVAL": ["FACTOR", "TERM'"],
-        "(": ["FACTOR", "TERM'"]
+        "(": ["FACTOR", "TERM'"],
+        ";": ["ɛ"],
+
     },
     
     "TERM'": {
         "*": ["*", "FACTOR", "TERM'"],
         "/": ["/", "FACTOR", "TERM'"],
-        "ɛ": []
+        "ɛ": [],
+        ";": ["ɛ"]
     },
     
     "FACTOR": {
@@ -442,15 +535,22 @@ parse_table = {
     },
     
     "VARIABLE_MODIFICATION": {
-        "++": ["++"],
-        "--": ["--"],
+        "+": ["+", "MOD_EQUAL"],
+        "-": ["-", "MOD_EQUAL"],
+        "*": ["*", "MOD_EQUAL"],
+        "/": ["/", "MOD_EQUAL"],
         "=": ["=", "ARITH_EXPR"],
-        "+=": ["+=", "ARITH_EXPR"],
-        "-=": ["-=", "ARITH_EXPR"],
-        "*=": ["*=", "ARITH_EXPR"],
-        "/=": ["/=", "ARITH_EXPR"]
+        "++": ["++"],
+        "--": ["--"]
     },
-    
+
+    "MOD_EQUAL": {
+        "ɛ": [],
+        "=": ["="],
+        "+": ["+"],
+
+    },
+
     "VAROPLIST": {
         "ɛ": [],
         "+": ["PLUS_OPERATION"],
