@@ -137,6 +137,8 @@ def lexer(codigo):
                     if current_token != "":
                         if(current_token in palabras_reservadas.keys()):
                             append.append(Token(palabras_reservadas[current_token], current_token, linea))
+                        elif(current_token.isdigit()):
+                            append.append(Token("INTVAL", current_token, linea))
                         else:
                             append.append(Token("VARNAME", current_token, linea))
                     append.append(Token(especiales[char], char, linea))
@@ -145,6 +147,8 @@ def lexer(codigo):
                     if current_token != "":
                         if(current_token in palabras_reservadas.keys()):
                             append.append(Token(palabras_reservadas[current_token], current_token, linea))
+                        elif(current_token.isdigit()):
+                            append.append(Token("INTVAL", current_token, linea))
                         else:
                             append.append(Token("VARNAME", current_token, linea))
                     append.append(Token(aperturas[char], char, linea))
@@ -153,6 +157,8 @@ def lexer(codigo):
                     if current_token != "":
                         if(current_token in palabras_reservadas.keys()):
                             append.append(Token(palabras_reservadas[current_token], current_token, linea))
+                        elif(current_token.isdigit()):
+                            append.append(Token("INTVAL", current_token, linea))
                         else:
                             append.append(Token("VARNAME", current_token, linea))
                     append.append(Token(operadores[char], char, linea))
@@ -161,6 +167,8 @@ def lexer(codigo):
                     if current_token != "":
                         if(current_token in palabras_reservadas.keys()):
                             append.append(Token(palabras_reservadas[current_token], current_token, linea))
+                        elif(current_token.isdigit()):
+                            append.append(Token("INTVAL", current_token, linea))
                         else:
                             append.append(Token("VARNAME", current_token, linea))
                     append.append(Token(cerraduras[char], char, linea))
@@ -174,6 +182,8 @@ def lexer(codigo):
             if current_token != "":
                 if(current_token in palabras_reservadas.keys()):
                     append.append(Token(palabras_reservadas[current_token], current_token, linea))
+                elif(current_token.isdigit()):
+                    append.append(Token("INTVAL", current_token, linea))
                 else:
                     append.append(Token("VARNAME", current_token, linea))
             #print (append)

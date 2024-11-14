@@ -49,10 +49,27 @@ def parse(tokens, parse_table):
                     matched = True
                     index += 1  # Move to the next token
                     break
-
             if matched:
                 continue
             else:
+                if top in parse_table:
+                    token_key = current_token.valor if current_token.valor in parse_table[top] else current_token.tipo
+                    if token_key in parse_table[top]:
+                        rule = parse_table[top][token_key]
+                        print(f"Rule found: {top} -> {rule}")
+                        if rule != ['ɛ']:
+                            print(f"Expanding rule: Pushing {list(reversed(rule))} onto stack")
+                            stack.extend(reversed(rule))
+                    else:
+                        print(f"Error: No rule for '{top}' with current token '{current_token.valor}' (Type: '{current_token.tipo}')")
+                        raise SyntaxError(
+                            f"Unexpected token '{current_token.valor}' (type '{current_token.tipo}') at line {current_token.linea}"
+                        )
+                    continue
+                elif top == current_token.valor:
+                    print(f"Terminal match found: {top} == {current_token.valor}")
+                    index += 1  # Move to the next token
+                    continue
                 print(f"Error: No matching regex rule for '{top}' with token '{current_token.valor}'")
                 raise SyntaxError(
                     f"Unexpected token '{current_token.valor}' (type '{current_token.tipo}') at line {current_token.linea}"
