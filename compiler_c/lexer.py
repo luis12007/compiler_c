@@ -135,22 +135,34 @@ def lexer(codigo):
             while(not char.isspace()):
                 if(char in especiales.keys()):
                     if current_token != "":
-                        append.append(Token("VARNAME", current_token, linea))
+                        if(current_token in palabras_reservadas.keys()):
+                            append.append(Token(palabras_reservadas[current_token], current_token, linea))
+                        else:
+                            append.append(Token("VARNAME", current_token, linea))
                     append.append(Token(especiales[char], char, linea))
                     current_token = ""
                 elif(char in aperturas.keys()):
                     if current_token != "":
-                        append.append(Token("VARNAME", current_token, linea))
+                        if(current_token in palabras_reservadas.keys()):
+                            append.append(Token(palabras_reservadas[current_token], current_token, linea))
+                        else:
+                            append.append(Token("VARNAME", current_token, linea))
                     append.append(Token(aperturas[char], char, linea))
                     current_token = ""
                 elif(char in operadores.keys()):
                     if current_token != "":
-                        append.append(Token("VARNAME", current_token, linea))
+                        if(current_token in palabras_reservadas.keys()):
+                            append.append(Token(palabras_reservadas[current_token], current_token, linea))
+                        else:
+                            append.append(Token("VARNAME", current_token, linea))
                     append.append(Token(operadores[char], char, linea))
                     current_token = ""
                 elif(char in cerraduras.keys()):
                     if current_token != "":
-                        append.append(Token("VARNAME", current_token, linea))
+                        if(current_token in palabras_reservadas.keys()):
+                            append.append(Token(palabras_reservadas[current_token], current_token, linea))
+                        else:
+                            append.append(Token("VARNAME", current_token, linea))
                     append.append(Token(cerraduras[char], char, linea))
                     current_token = ""
                 else:
@@ -160,7 +172,10 @@ def lexer(codigo):
                 if(char == '\n'):
                     linea += 1
             if current_token != "":
-                append.append(Token("VARNAME", current_token, linea))
+                if(current_token in palabras_reservadas.keys()):
+                    append.append(Token(palabras_reservadas[current_token], current_token, linea))
+                else:
+                    append.append(Token("VARNAME", current_token, linea))
             #print (append)
             for item in append:
                 tokens.append(item)        
