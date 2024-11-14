@@ -395,7 +395,7 @@ parse_table = {
     # INTLIST with semicolon handling
     "INTLIST": {
         ",": [",", "VARNAME", "INTLIST"],
-        "=": [",", "VARNAME", "=", "INTVAL", "INTLIST"],
+        "=": ["=", "INTVAL", "INTLIST"],
         ";": ["ɛ"],
         "ɛ": []
     },
@@ -403,7 +403,7 @@ parse_table = {
     # FLOATLIST with semicolon handling
     "FLOATLIST": {
         ",": [",", "VARNAME", "FLOATLIST"],
-        "=": [",", "VARNAME", "=", "FLOATVAL", "FLOATLIST"],
+        "=": ["=", "FLOATVAL", "FLOATLIST"],
         ";": ["ɛ"],
         "ɛ": []
     },
@@ -411,7 +411,7 @@ parse_table = {
     # CHARLIST with semicolon handling
     "CHARLIST": {
         ",": [",", "VARNAME", "CHARLIST"],
-        "=": [",", "VARNAME", "=", "CHARVAL", "CHARLIST"],
+        "=": ["=", "CHARVAL", "CHARLIST"],
         ";": ["ɛ"],
         "ɛ": []
     },
@@ -419,7 +419,7 @@ parse_table = {
     # STRINGLIST with semicolon handling
     "STRINGLIST": {
         ",": [",", "VARNAME", "STRINGLIST"],
-        "=": [",", "VARNAME", "=", "STRINGVAL", "STRINGLIST"],
+        "=": ["=", "STRINGVAL", "STRINGLIST"],
         ";": ["ɛ"],
         "ɛ": []
     },
@@ -427,7 +427,7 @@ parse_table = {
     # DOUBLELIST with semicolon handling
     "DOUBLELIST": {
         ",": [",", "VARNAME", "DOUBLELIST"],
-        "=": [",", "VARNAME", "=", "DOUBLEVAL", "DOUBLELIST"],
+        "=": ["=", "DOUBLEVAL", "DOUBLELIST"],
         ";": ["ɛ"],
         "ɛ": []
     },
@@ -435,7 +435,7 @@ parse_table = {
     # LONGLIST with semicolon handling
     "LONGLIST": {
         ",": [",", "VARNAME", "LONGLIST"],
-        "=": [",", "VARNAME", "=", "INTVAL", "LONGLIST"],
+        "=": ["=", "INTVAL", "LONGLIST"],
         ";": ["ɛ"],
         "ɛ": []
     },
@@ -443,7 +443,7 @@ parse_table = {
     # SHORTLIST with semicolon handling
     "SHORTLIST": {
         ",": [",", "VARNAME", "SHORTLIST"],
-        "=": [",", "VARNAME", "=", "INTVAL", "SHORTLIST"],
+        "=": ["=", "INTVAL", "SHORTLIST"],
         ";": ["ɛ"],
         "ɛ": []
     },
@@ -510,6 +510,7 @@ parse_table = {
     
     "FLOATVAL": {
         "INTVAL": ["INTVAL", "FLOAT_AUX"],
+        "[0-9][0-9]*f": ["[0-9][0-9]*f"]
     },
 
     "FLOAT_AUX":{
