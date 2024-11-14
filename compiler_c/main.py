@@ -160,8 +160,12 @@ parse_table = {
     #Added CONDITION FOR 
     "CONDITION": {
         "VARNAME": ["SIMPLE_CONDITION"],
-        "(": ["LOGICAL_CONDITION"],
-        "!": ["NEGATION"]
+        "(": ["(", "CONDITION", ")"],
+        "!": ["!", "CONDITION"],
+        "true": ["true"],
+        "false": ["false"],
+        "0": ["0"],
+        "INTVAL": ["INTVAL"]
     },
 
     "SIMPLE_CONDITION": {
@@ -169,34 +173,15 @@ parse_table = {
         "VARVAL": ["VARNAME", "CONDOPERATOR", "VARVAL", "VARVAL", "CONDOPERATOR", "VARNAME", "VARVAL", "CONDOPERATOR", "VARVAL"]
     },
 
-    "LOGICAL_CONDITION": {
-        "(": ["(", "LOGICAL_EXPR", ")"]
-    },
-
-    "LOGICAL_EXPR": {
-        "0": ["LOGICAL_VAL", "+", "LOGICAL_VAL"],
-        "1": ["LOGICAL_VAL", "+", "LOGICAL_VAL"],
-        "true": ["LOGICAL_VAL", "+", "LOGICAL_VAL"],
-        "false": ["LOGICAL_VAL", "+", "LOGICAL_VAL"]
-    },
-
-    "LOGICAL_VAL": {
-        "0": ["0"],
-        "1": ["1"],
-        "true": ["true"],
-        "false": ["false"]
-    },
-
-    "NEGATION": {
-        "!": ["!", "CONDITION"]
-    },
-
     "CONDOPERATOR": {
-        "==": ["=="],
-        "<": ["<"],
-        "<=": ["<="],
-        ">": [">"],
-        ">=": [">="]
+        "=": ["=", "="],
+        "<": ["<", "OREQUAL"],
+        ">": [">", "OREQUAL"],
+    },
+
+    "OREQUAL":{
+        "ɛ": [],
+        "=": ["="]
     },
     
     "FORVAR": {
