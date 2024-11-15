@@ -211,86 +211,82 @@ def imprimir_tabla(tokens):
 
 """ -------------------------VARIABLES--------------------------------- """
 class Var:
-    def __init__(self, name, value, tipo):
+    def __init__(self, name, value, tipo, source, linea):
         self.name = name
         self.value = value
         self.tipo = tipo
+        self.source = source
+        self.linea = linea
 
     def __repr__(self):
-        return f'Var({self.name}, {self.value}, {self.tipo})'
+        return f'Var({self.name}, {self.value}, {self.tipo}, {self.source}, Linea: {self.linea})'
+
 
 def trabajar_variables(tokens):
-    variables = {}
+    variables = []
     i = 0
     length = len(tokens)
 
     while i < length:
-        # Check if the token is a variable declaration by its value in `palabras_reservadas`
-        if tokens[i].valor in palabras_reservadas and i + 1 < length and tokens[i + 1].tipo == 'VARNAME':
+        token = tokens[i]
+
+        # Handle macros (`#define`)
+        if token.valor == '#define' and i + 2 < length:
+            macro_name = tokens[i + 1].valor  # Macro name
+            macro_body = tokens[i + 2].valor  # Macro body
+            variables.append(Var(macro_name, macro_body, "Macro", "Macro", token.linea))
+            i += 3
+            continue
+
+        # Handle function declarations
+        if token.valor in palabras_reservadas and tokens[i + 1].tipo == 'VARNAME' and tokens[i + 2].tipo == 'Inicio de paréntesis':
+            function_name = tokens[i + 1].valor  # Function name
+            return_type = palabras_reservadas[token.valor]  # Function return type
+            variables.append(Var(function_name, None, return_type, "Function", token.linea))
+            i += 3  # Skip function name and opening parenthesis
+
+            # Gather function parameters
+            while i < length and tokens[i].tipo != 'Fin de paréntesis':
+                if tokens[i].tipo == 'VARNAME' and i - 1 >= 0 and tokens[i - 1].valor in palabras_reservadas:
+                    param_type = palabras_reservadas[tokens[i - 1].valor]
+                    param_name = tokens[i].valor
+                    variables.append(Var(param_name, None, param_type, f"Function: {function_name}", tokens[i].linea))
+                i += 1
+            continue
+
+        # Handle variable declarations
+        if token.valor in palabras_reservadas and i + 1 < length and tokens[i + 1].tipo == 'VARNAME':
+            tipo = palabras_reservadas[token.valor]  # Variable type
             identifier = tokens[i + 1].valor  # Variable name
-            tipo = palabras_reservadas[tokens[i].valor]  # Look up type from reserved words
+            i += 2
 
-            # Check if this identifier is part of a function declaration
-            if i + 2 < length and tokens[i + 2].tipo == 'Inicio de paréntesis':
-                i += 3  # Skip the function name and opening parenthesis
-                continue
+            # Handle multi-variable declarations
+            value = None
+            while i < length and tokens[i].tipo != 'Punto y coma':
+                if tokens[i].tipo == 'NUMERO':
+                    value = tokens[i].valor  # Assign the value to the last declared variable
+                elif tokens[i].tipo == 'VARNAME':
+                    variables.append(Var(identifier, None, tipo, "Global Variable", token.linea))
+                    identifier = tokens[i].valor  # Move to next variable in multi-declaration
+                i += 1
 
-            i += 2  # Move to the token after the variable name
+            # Assign value to the last variable declared
+            variables.append(Var(identifier, value, tipo, "Global Variable", token.linea))
+            continue
 
-            # Check for assignment after declaration
-            if i < length and tokens[i].tipo == 'Igual':
-                i += 1  # Move to the token after '='
+        i += 1
 
-                values = []
-                operators = []
-
-                # Gather tokens until we reach a semicolon
-                while i < length and tokens[i].tipo != 'Punto y coma':
-                    if tokens[i].tipo == 'VARNAME':
-                        # Use the variable's value if assigned before, or assume it as 0 if not yet assigned
-                        value = variables.get(tokens[i].valor, {}).get("value", 0)
-                        values.append(value)
-                    elif tokens[i].tipo == 'NUMERO':
-                        values.append(int(tokens[i].valor))  # Numeric literals as integers
-                    elif tokens[i].valor in ['+', '-', '*', '/']:
-                        operators.append(tokens[i].valor)  # Add operators
-                    i += 1
-
-                # Calculate the expression result
-                if values:
-                    result = values.pop(0)
-                    while values and operators:
-                        op = operators.pop(0)
-                        val = values.pop(0)
-                        if op == '+':
-                            result += val
-                        elif op == '-':
-                            result -= val
-                        elif op == '*':
-                            result *= val
-                        elif op == '/':
-                            result = int(result / val)  # Integer division for simplicity
-
-                    # Assign the calculated result to the variable with its type
-                    variables[identifier] = {"value": result, "tipo": tipo}
-            else:
-                # If there’s no assignment, initialize with default value (e.g., 0)
-                variables[identifier] = {"value": 0, "tipo": tipo}
-
-        i += 1  # Move to the next token
-
-    # Convert dictionary to list of Var objects and print final variable values
-    final_variables = [Var(name, details["value"], details["tipo"]) for name, details in variables.items()]
-    imprimir_variables(final_variables)
-    return final_variables
+    # Print and return final results
+    imprimir_variables(variables)
+    return variables
 
 def imprimir_variables(variables):
         # Crear una tabla para los símbolos
     tabla = PrettyTable()
-    tabla.field_names = [ "Tipo","Nombre", "Valor"]
+    tabla.field_names = [ "Tipo","Nombre", "Valor" , "Fuente" , "Línea"]
         # Printing the variables
     for var in variables:
-        tabla.add_row([var.tipo,var.name, var.value])
+        tabla.add_row([var.tipo,var.name, var.value, var.source, var.linea])
     print(tabla)
 
 

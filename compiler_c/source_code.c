@@ -22,11 +22,12 @@ int factorial(int n) {
     }
 
     /* IF STATEMENT */
-    /* if (y >= 10.0) {
-        printf("y is greater than or equal to 10.0\n");
+    if (y >= 10.0) {
+        result = 10;
+
     } else {
-        printf("y is less than 10.0\n");
-    } */
+        result = 20;
+    } 
     return result;
 }
 

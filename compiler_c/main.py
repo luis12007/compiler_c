@@ -1,6 +1,6 @@
 from lexer import lexer, trabajar_variables, Token
 from parser_tokens import parse
-from SemanticAnalyzer import analyze_structure
+""" from SemanticAnalyzer import analyze_structure """
 from code_generator import generate_code , reset_intermediate_code
 from object_code_generator import generate_object_code, print_object_code, reset_object_code
 
@@ -14,7 +14,7 @@ with open('source_code.c', 'r') as file:
 tokens = lexer(codigo)
 variables = trabajar_variables(tokens)
 """ -----------------------------PARSER------------------------------------- """
-# Parsear el código fuente
+""" # Parsear el código fuente
 parse_table = {
     # Existing entries (# means comment and edditions) 
     "SOURCE": {
@@ -735,19 +735,12 @@ parse_table = {
     }
 }
 
-
-print(parse(tokens,parse_table))
+print(parse(tokens,parse_table))  """
 """ ---------------------------SEMANTICO------------------------------------ """
 #TODO: respuesta de parser 
-parsed_structure = [
-    {"type": "declaration", "name": "result", "var_type": "int", "value": 1},
-    {"type": "declaration", "name": "i", "var_type": "int", "value": 1},
-    {"type": "assignment", "name": "result", "value": "result * i"},
-    {"type": "return", "value": "result"}
-]
-
+print("Variables: ",variables)
 #llamando al analizador semantico
-analyze_structure(parsed_structure)
+analyze_structure(variables)
 
 """ ------------------------CODIGO INTERMEDIO------------------------------- """
 # Generador de codigo intermedio
