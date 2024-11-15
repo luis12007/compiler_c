@@ -176,23 +176,38 @@ parse_table = {
         "true": ["true"],
         "false": ["false"],
         "0": ["0"],
-        "INTVAL": ["INTVAL"]
+        "INTVAL": ["SIMPLE_CONDITION"],
+        "FLOATVAL": ["SIMPLE_CONDITION"]
+
     },
 
+    #Changed to allow for multiple conditions
     "SIMPLE_CONDITION": {
-        "VARNAME": ["VARNAME", "CONDOPERATOR", "VARNAME"],
-        "VARVAL": ["VARNAME", "CONDOPERATOR", "VARVAL", "VARVAL", "CONDOPERATOR", "VARNAME", "VARVAL", "CONDOPERATOR", "VARVAL"]
+    "VARNAME": ["EXPRESSION", "CONDOPERATOR", "EXPRESSION"],
+    "INTVAL": ["EXPRESSION", "CONDOPERATOR", "EXPRESSION"],
+    "FLOATVAL": ["EXPRESSION", "CONDOPERATOR", "EXPRESSION"]
     },
+
+    "EXPRESSION": {
+    "VARNAME": ["VARNAME"],
+    "INTVAL": ["INTVAL"],
+    "FLOATVAL": ["FLOATVAL"]
+},
+
 
     "CONDOPERATOR": {
         "=": ["=", "="],
         "<": ["<", "OREQUAL"],
         ">": [">", "OREQUAL"],
+        "*": ["*", "OREQUAL"],
     },
 
     "OREQUAL":{
         "ɛ": [],
-        "=": ["="]
+        "=": ["="],
+        "VARNAME": ["ɛ"],
+        "INTVAL": ["ɛ"],
+        "FLOATVAL": ["ɛ"]
     },
     
     "FORVAR": {
@@ -231,12 +246,38 @@ parse_table = {
         "#include (quote)": ["#include", "\"", "VARNAME", ".", "VARNAME", "\""]
     },
     
+    #Changing for ambiguity
     "DEFINESTATEMENT": {
-        "#define": ["#define", "VARNAME", "VARNAME"],
-        "#define": ["#define", "VARNAME", "{", "STATEMENT", "}"],
-        "#define": ["#define", "FUNCTION"]
+    "#define": ["#define", "VARNAME", "DEFINEBODY"]
     },
-    
+
+    "DEFINEBODY": {
+        "VARNAME": ["VARNAME"],                             
+        "<": ["<", "VARNAME", ">", "VARNAME"],                          
+        "{": ["{", "STATEMENT", "}"],                           
+        "(": ["PARAM_MACRO_BODY"]                                      
+    },
+
+    # Added
+    "PARAM_MACRO_BODY": {
+        "(": ["(", "PARAMLIST", ")", "MACRO_BODY"]
+    },
+
+
+    "PARAMLIST": {
+        "VARNAME": ["VARNAME", "PARAMLIST'"]                    # Start with one parameter and use recursion for more
+    },
+
+    "PARAMLIST'": {
+        ",": [",", "VARNAME", "PARAMLIST'"],                    # Allows additional parameters separated by commas
+        ")": ["ɛ"]                                              # Ends the parameter list
+    },
+
+    "MACRO_BODY": {
+        "for": ["for", "(", "FORVAR",";", "CONDITION", ";", "VARCHANGESTATEMENT", ")"],
+        "(": ["(", "CONDITION", ")"],
+    },
+
     # CHANGED
     "RETURNSTATEMENT": {
     "return": ["return", "OPTIONAL_VARVAL", ";"],
@@ -535,10 +576,13 @@ parse_table = {
     
     "VARCHANGELINE": {
         "VARNAME": ["VARCHANGESTATEMENT", ";"]
+
     },
     
     "VARCHANGESTATEMENT": {
-        "VARNAME": ["VARNAME", "VARIABLE_MODIFICATION"]
+        "VARNAME": ["VARNAME", "VARIABLE_MODIFICATION"],
+        "+": ["VARIABLE_MODIFICATION", "VARNAME"],                   # Handles prefix increment (e.g., ++VARNAME)
+        "-": ["VARIABLE_MODIFICATION", "VARNAME"]   
     },
     
     "VARIABLE_MODIFICATION": {
@@ -555,6 +599,7 @@ parse_table = {
         "ɛ": [],
         "=": ["="],
         "+": ["+"],
+        "-": ["-"],
 
     },
 
