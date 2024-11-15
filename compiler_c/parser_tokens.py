@@ -70,10 +70,11 @@ def parse(tokens, parse_table):
                     print(f"Terminal match found: {top} == {current_token.valor}")
                     index += 1  # Move to the next token
                     continue
-                print(f"Error: No matching regex rule for '{top}' with token '{current_token.valor}'")
-                raise SyntaxError(
-                    f"Unexpected token '{current_token.valor}' (type '{current_token.tipo}') at line {current_token.linea}"
-                )
+                else:
+                    print(f"Error: No matching regex rule for '{top}' with token '{current_token.valor}'")
+                    raise SyntaxError(
+                        f"Unexpected token '{current_token.valor}' (type '{current_token.tipo}') at line {current_token.linea}"
+                    )
 
         # Non-regex non-terminal handling
         elif top in parse_table:

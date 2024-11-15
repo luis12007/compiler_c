@@ -18,17 +18,32 @@ variables = trabajar_variables(tokens)
 parse_table = {
     # Existing entries (# means comment and edditions) 
     "SOURCE": {
-        "#include": ["INCLUDEBLOCK", "DEFINEBLOCK", "FUNCTIONBLOCK", "MAINFUNCTION"],
-        "#define": ["INCLUDEBLOCK", "DEFINEBLOCK", "FUNCTIONBLOCK", "MAINFUNCTION"],
-        "int": ["INCLUDEBLOCK", "DEFINEBLOCK", "FUNCTIONBLOCK", "MAINFUNCTION"],
-        "float": ["INCLUDEBLOCK", "DEFINEBLOCK", "FUNCTIONBLOCK", "MAINFUNCTION"],
-        "char": ["INCLUDEBLOCK", "DEFINEBLOCK", "FUNCTIONBLOCK", "MAINFUNCTION"],
-        "string": ["INCLUDEBLOCK", "DEFINEBLOCK", "FUNCTIONBLOCK", "MAINFUNCTION"],
-        "double": ["INCLUDEBLOCK", "DEFINEBLOCK", "FUNCTIONBLOCK", "MAINFUNCTION"],
-        "long": ["INCLUDEBLOCK", "DEFINEBLOCK", "FUNCTIONBLOCK", "MAINFUNCTION"],
-        "short": ["INCLUDEBLOCK", "DEFINEBLOCK", "FUNCTIONBLOCK", "MAINFUNCTION"],
-        "void": ["INCLUDEBLOCK", "DEFINEBLOCK", "FUNCTIONBLOCK", "MAINFUNCTION"],
+        "#include": ["SOURCEBLOCK", "MAINFUNCTION"],
+        "#define": ["SOURCEBLOCK", "MAINFUNCTION"],
+        "int": ["SOURCEBLOCK", "MAINFUNCTION"],
+        "float": ["SOURCEBLOCK", "MAINFUNCTION"],
+        "char": ["SOURCEBLOCK", "MAINFUNCTION"],
+        "string": ["SOURCEBLOCK", "MAINFUNCTION"],
+        "double": ["SOURCEBLOCK", "MAINFUNCTION"],
+        "long": ["SOURCEBLOCK", "MAINFUNCTION"],
+        "short": ["SOURCEBLOCK", "MAINFUNCTION"],
+        "void": ["SOURCEBLOCK", "MAINFUNCTION"],
         "$": ["ɛ"]
+    },
+
+    "SOURCEBLOCK":{
+        "#include": ["INCLUDEBLOCK", "SOURCEBLOCK"],
+        "#define": ["DEFINEBLOCK", "SOURCEBLOCK"],
+        "int": ["FUNCTIONBLOCK", "SOURCEBLOCK"],
+        "float": ["FUNCTIONBLOCK", "SOURCEBLOCK"],
+        "char": ["FUNCTIONBLOCK", "SOURCEBLOCK"],
+        "string": ["FUNCTIONBLOCK", "SOURCEBLOCK"],
+        "double": ["FUNCTIONBLOCK", "SOURCEBLOCK"],
+        "long": ["FUNCTIONBLOCK", "SOURCEBLOCK"],
+        "short": ["FUNCTIONBLOCK", "SOURCEBLOCK"],
+        "void": ["FUNCTIONBLOCK", "SOURCEBLOCK"],
+        "$": ["ɛ"],
+        "ɛ": []
     },
     
     # added voids
@@ -119,7 +134,7 @@ parse_table = {
         "const": ["INITLINE", "STATEMENT"],
         "volatile": ["INITLINE", "STATEMENT"],
         "inline": ["INITLINE", "STATEMENT"],
-        "if": ["CONDITIONAL", "STATEMENT"],
+        "if": ["IF", "STATEMENT"],
         "switch": ["SWITCHSTATEMENT", "STATEMENT"],
         "for": ["FORLOOP"],
         "while": ["WHILELOOP"],
@@ -133,39 +148,44 @@ parse_table = {
         "string": ["INITLIST", "STATEMENT"],   
         "VARNAME": ["VARCHANGELINE", "STATEMENT"],
         "return": ["RETURNSTATEMENT", "STATEMENT"],
-        "ɛ": [],                               # Allow the list to end on semicolon
-        "}": ["ɛ"]
+        "break": ["break", ";", "STATEMENT"],
+        "case": ["ɛ"],
+        "default": ["ɛ"],
+        "}": ["ɛ"],
+        "ɛ": []                               # Allow the list to end on semicolon
     },
-    
 
+    "IF":{
+        "if": ["if", "(", "CONDITION", ")", "{", "STATEMENT", "}", "ELSE"]
+    },
+
+    "ELSE":{
+        "else": ["else", "ELSEIF"],
+        "ɛ": []
+    },
+
+    "ELSEIF":{
+        "if": ["if", "(", "CONDITION", ")", "{", "STATEMENT", "}", "ELSE"],
+        "{": ["{", "STATEMENT", "}"]
+    },
     
     "SWITCHSTATEMENT": {
         "switch": ["switch", "(", "VARNAME", ")", "{", "SWITCHCASELIST", "}"]
     },
     
     "SWITCHCASELIST": {
-        "case": ["SWITCHCASE", "SWITCHCASELIST'", "DEFAULTCASE"],
-        "default": ["SWITCHCASE", "SWITCHCASELIST'", "DEFAULTCASE"]
-    },
-    
-    "SWITCHCASELIST'": {
-        "case": ["SWITCHCASE", "SWITCHCASELIST'"],
-        "ɛ": []
+        "case": ["case", "FACTOR", ":", "STATEMENT", "SWITCHCASELIST"],
+        "default": ["DEFAULTCASE"]
     },
     
     "DEFAULTCASE": {
-        "default": ["default:", "STATEMENT", "break;"]
-    },
-    
-    "LOOPSTATEMENT": {
-        "for": ["FORLOOP"],
-        "while": ["WHILELOOP"],
-        "do": ["DOWHILELOOP"]
+        "default": ["default", ":", "STATEMENT"],
+        "}": ["ɛ"]
     },
     
     #TODO: ADD CONDITION TO CURRENT LL1 GRAMMAR
     "FORLOOP": {
-        "for": ["for", "(", "FORVAR", ";", "CONDITION", ";", "VARCHANGESTATEMENT", ")", "{", "STATEMENT", "}"]
+        "for": ["for", "(", "FORVAR", ";", "CONDITION", ";", "VARCHANGESTATEMENT", ")", "{", "STATEMENT", "}", "STATEMENT"]
     },
 
     #Added CONDITION FOR 
@@ -190,10 +210,9 @@ parse_table = {
 
     "EXPRESSION": {
     "VARNAME": ["VARNAME"],
-    "INTVAL": ["INTVAL"],
+    "INTVAL": ["INTVAL", "FLOAT_AUX"],
     "FLOATVAL": ["FLOATVAL"]
-},
-
+    },
 
     "CONDOPERATOR": {
         "=": ["=", "="],
@@ -512,27 +531,21 @@ parse_table = {
     "ARITH_EXPR'": {
         "+": ["+", "TERM", "ARITH_EXPR'"],
         "-": ["-", "TERM", "ARITH_EXPR'"],
-        "ɛ": [],
-        ";": ["ɛ"]
+        "*": ["*", "TERM", "ARITH_EXPR'"],
+        "/": ["/", "TERM", "ARITH_EXPR'"],
+        ";": ["ɛ"],
+        "ɛ": []
     },
     
     "TERM": {
-        "VARNAME": ["FACTOR", "TERM'"],
-        "INTVAL": ["FACTOR", "TERM'"],
-        "FLOATVAL": ["FACTOR", "TERM'"],
-        "CHARVAL": ["FACTOR", "TERM'"],
-        "STRINGVAL": ["FACTOR", "TERM'"],
-        "DOUBLEVAL": ["FACTOR", "TERM'"],
-        "(": ["FACTOR", "TERM'"],
+        "VARNAME": ["FACTOR"],
+        "INTVAL": ["FACTOR"],
+        "FLOATVAL": ["FACTOR"],
+        "CHARVAL": ["FACTOR"],
+        "STRINGVAL": ["FACTOR"],
+        "DOUBLEVAL": ["FACTOR"],
+        "(": ["FACTOR"],
         ";": ["ɛ"],
-
-    },
-    
-    "TERM'": {
-        "*": ["*", "FACTOR", "TERM'"],
-        "/": ["/", "FACTOR", "TERM'"],
-        "ɛ": [],
-        ";": ["ɛ"]
     },
     
     "FACTOR": {
@@ -556,9 +569,12 @@ parse_table = {
 
     "FLOAT_AUX":{
         ".": [".", "FLOAT_AUX"],
-        "ɛ": [],
         "INTVAL": ["INTVAL"],
-        "[0-9][0-9]*f": ["[0-9][0-9]*f"]
+        "[0-9][0-9]*f": ["[0-9][0-9]*f"],
+        ";": ["ɛ"],
+        "}": ["ɛ"],
+        ")": ["ɛ"],
+        "ɛ": []
     },
     
     "CHARVAL": {

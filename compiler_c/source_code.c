@@ -22,11 +22,26 @@ int factorial(int n) {
     }
 
     /* IF STATEMENT */
-    /* if (y >= 10.0) {
-        printf("y is greater than or equal to 10.0\n");
+    // Printf no existe en la gramatica xd
+    if (result2 >= 10.0f) {
+        result = 2;
+        //printf("y is greater than or equal to 10.0\n");
     } else {
-        printf("y is less than 10.0\n");
-    } */
+        result = 3;
+        //printf("y is less than 10.0\n");
+    }
+
+    switch(result){
+        case 2:
+            result = 4;
+            break;
+        case 3:
+            result = 9;
+            break;
+        default:
+            break;
+    }
+
     return result;
 }
 
