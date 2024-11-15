@@ -101,7 +101,7 @@ def lexer(codigo):
     i = 0
     linea = 1
 
-    while i < len(codigo):
+    while i < len(codigo):  # Ensure we don't go out of bounds
         char = codigo[i]
 
         # Handle new lines
@@ -125,72 +125,78 @@ def lexer(codigo):
                 i += 1
             i += 2
             continue
-        
+
         # Ignore whitespace
         elif char.isspace():
             i += 1
             continue
+
         else:
             append = []
-            while(not char.isspace()):
-                if(char in especiales.keys()):
+            while i < len(codigo):  # Added boundary check
+                char = codigo[i]  # <--- Edited to reassign `char` within bounds
+                if char.isspace() or char == '\n': 
+                    break
+                if char in especiales.keys():
                     if current_token != "":
-                        if(current_token in palabras_reservadas.keys()):
+                        if current_token in palabras_reservadas.keys():
                             append.append(Token(palabras_reservadas[current_token], current_token, linea))
-                        elif(current_token.isdigit()):
+                        elif current_token.isdigit():
                             append.append(Token("INTVAL", current_token, linea))
                         else:
                             append.append(Token("VARNAME", current_token, linea))
                     append.append(Token(especiales[char], char, linea))
                     current_token = ""
-                elif(char in aperturas.keys()):
+                elif char in aperturas.keys():
                     if current_token != "":
-                        if(current_token in palabras_reservadas.keys()):
+                        if current_token in palabras_reservadas.keys():
                             append.append(Token(palabras_reservadas[current_token], current_token, linea))
-                        elif(current_token.isdigit()):
+                        elif current_token.isdigit():
                             append.append(Token("INTVAL", current_token, linea))
                         else:
                             append.append(Token("VARNAME", current_token, linea))
                     append.append(Token(aperturas[char], char, linea))
                     current_token = ""
-                elif(char in operadores.keys()):
+                elif char in operadores.keys():
                     if current_token != "":
-                        if(current_token in palabras_reservadas.keys()):
+                        if current_token in palabras_reservadas.keys():
                             append.append(Token(palabras_reservadas[current_token], current_token, linea))
-                        elif(current_token.isdigit()):
+                        elif current_token.isdigit():
                             append.append(Token("INTVAL", current_token, linea))
                         else:
                             append.append(Token("VARNAME", current_token, linea))
                     append.append(Token(operadores[char], char, linea))
                     current_token = ""
-                elif(char in cerraduras.keys()):
+                elif char in cerraduras.keys():
                     if current_token != "":
-                        if(current_token in palabras_reservadas.keys()):
+                        if current_token in palabras_reservadas.keys():
                             append.append(Token(palabras_reservadas[current_token], current_token, linea))
-                        elif(current_token.isdigit()):
+                        elif current_token.isdigit():
                             append.append(Token("INTVAL", current_token, linea))
                         else:
                             append.append(Token("VARNAME", current_token, linea))
                     append.append(Token(cerraduras[char], char, linea))
                     current_token = ""
                 else:
-                    current_token += char  
-                i += 1
-                char = codigo[i]
-                if(char == '\n'):
-                    linea += 1
+                    current_token += char
+
+                i += 1  
+                if i >= len(codigo): 
+                    break
+
             if current_token != "":
-                if(current_token in palabras_reservadas.keys()):
+                if current_token in palabras_reservadas.keys():
                     append.append(Token(palabras_reservadas[current_token], current_token, linea))
-                elif(current_token.isdigit()):
+                elif current_token.isdigit():
                     append.append(Token("INTVAL", current_token, linea))
                 else:
                     append.append(Token("VARNAME", current_token, linea))
-            #print (append)
+
             for item in append:
-                tokens.append(item)        
-            i += 1
-            current_token = ""
+                tokens.append(item)
+
+        i += 1 
+        current_token = "" 
 
     imprimir_tabla(tokens)
     return tokens
