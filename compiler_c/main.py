@@ -100,6 +100,113 @@ parse_table = {
         "void": ["FUNCTYPE", "FUNCTION"]
     },
     
+
+    "FUNCINIT": {
+        "int": ["FUNCINITSTATEMENT", "FUNCINIT'"],
+        "float": ["FUNCINITSTATEMENT", "FUNCINIT'"],
+        "char": ["FUNCINITSTATEMENT", "FUNCINIT'"],
+        "string": ["FUNCINITSTATEMENT", "FUNCINIT'"],
+        "double": ["FUNCINITSTATEMENT", "FUNCINIT'"],
+        "long": ["FUNCINITSTATEMENT", "FUNCINIT'"],
+        "short": ["FUNCINITSTATEMENT", "FUNCINIT'"],
+        "ɛ": [],
+        ")": ["ɛ"]
+    },
+    
+    # Shrinked 
+    "FUNCINIT'": {
+        ",": [",", "FUNCINITSTATEMENT", "FUNCINIT'"],  # Continue with additional declarations
+        ")": ["ɛ"],
+        "ɛ": []  # Allows the parameter list to end without requiring assignment
+    },
+    
+    "FUNCINITSTATEMENT": {
+        "int": ["FUNCINTINIT"],
+        "float": ["FUNCFLOATINIT"],
+        "char": ["FUNCCHARINIT"],
+        "string": ["FUNCSTRINGINIT"],
+        "double": ["FUNCDOUBLEINIT"],
+        "long": ["FUNCLONGINIT"],
+        "short": ["FUNCSHORTINIT"]
+    },
+
+    "FUNCINTINIT": {
+        "int": ["int", "VARNAME", "FUNCINTAUX"],
+        ")": ["ɛ"]
+    },
+
+    "FUNCINTAUX":{
+        ",":["ɛ"],
+        ")":["ɛ"],
+        "=":["=", "INTVAL", "FUNCINTAUX"]
+    },
+    
+    "FUNCFLOATINIT": {
+        "float": ["float", "VARNAME", "FUNCFLOATAUX"],
+        ")": ["ɛ"]
+    },
+
+    "FUNCFLOATAUX":{
+        ",":["ɛ"],
+        ")":["ɛ"],
+        "=":["=", "FLOATVAL", "FUNCFLOATAUX"]
+    },
+    
+    "FUNCCHARINIT": {
+        "char": ["char", "VARNAME", "FUNCCHARAUX"],
+        ";": ["ɛ"]
+    },
+
+    "FUNCCHARAUX":{
+        ",":["ɛ"],
+        ")":["ɛ"],
+        "=":["=", "CHARVAL", "FUNCCHARAUX"]
+    },
+    
+    "FUNCSTRINGINIT": {
+        "string": ["string", "VARNAME", "FUNCSTRINGAUX"],
+        ")": ["ɛ"]
+    },
+
+    "FUNCSTRINGAUX":{
+        ",":["ɛ"],
+        ")":["ɛ"],
+        "=":["=", "STRINGVAL", "FUNCSTRINGAUX"]
+    },
+    
+    "FUNCDOUBLEINIT": {
+        "double": ["double", "VARNAME", "FUNCDOUBLEAUX"],
+        ")": ["ɛ"]
+    },
+
+    "FUNCDOUBLEAUX":{
+        ",":["ɛ"],
+        ")":["ɛ"],
+        "=":["=", "DOUBLEVAL", "FUNCDOUBLEAUX"]
+    },
+    
+    "FUNCLONGINIT": {
+        "long": ["long", "VARNAME", "FUNCLONGAUX"],
+        ")": ["ɛ"]
+    },
+
+    "FUNCLONGAUX":{
+        ",":["ɛ"],
+        ")":["ɛ"],
+        "=":["=", "LONGVAL", "FUNCLONGAUX"]
+    },
+    
+    "FUNCSHORTINIT": {
+        "short": ["short", "VARNAME", "FUNCSHORTAUX"],
+        ")": ["ɛ"]
+    },
+
+    "FUNCSHORTAUX":{
+        ",":["ɛ"],
+        ")":["ɛ"],
+        "=":["=", "SHORTVAL", "FUNCSHORTAUX"]
+    },
+    
     "FUNCTYPE": {
         "int": ["int"],
         "float": ["float"],
@@ -112,19 +219,19 @@ parse_table = {
     },
     
     "FUNCTION": {
-        "VARNAME": ["VARNAME", "(", "INITLIST", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"]
+        "VARNAME": ["VARNAME", "(", "FUNCINIT", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"]
     },
     
     # added "$":["ɛ"]
     "MAINFUNCTION": {
-        "int": ["FUNCTYPE", "main", "(", "INITLIST", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
-        "float": ["FUNCTYPE", "main", "(", "INITLIST", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
-        "char": ["FUNCTYPE", "main", "(", "INITLIST", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
-        "string": ["FUNCTYPE", "main", "(", "INITLIST", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
-        "double": ["FUNCTYPE", "main", "(", "INITLIST", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
-        "long": ["FUNCTYPE", "main", "(", "INITLIST", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
-        "short": ["FUNCTYPE", "main", "(", "INITLIST", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
-        "void": ["void", "main", "(", "INITLIST", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
+        "int": ["FUNCTYPE", "main", "(", "FUNCINIT", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
+        "float": ["FUNCTYPE", "main", "(", "FUNCINIT", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
+        "char": ["FUNCTYPE", "main", "(", "FUNCINIT", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
+        "string": ["FUNCTYPE", "main", "(", "FUNCINIT", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
+        "double": ["FUNCTYPE", "main", "(", "FUNCINIT", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
+        "long": ["FUNCTYPE", "main", "(", "FUNCINIT", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
+        "short": ["FUNCTYPE", "main", "(", "FUNCINIT", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
+        "void": ["void", "main", "(", "FUNCINIT", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
         "$":["ɛ"]
     },
     
@@ -146,7 +253,9 @@ parse_table = {
         "short": ["INITLIST", "STATEMENT"],   
         "char": ["INITLIST", "STATEMENT"],   
         "string": ["INITLIST", "STATEMENT"],   
-        "VARNAME": ["VARCHANGELINE", "STATEMENT"],
+        "VARNAME": ["VARNAME", "VARNAMELINE", "STATEMENT"],
+        "+": ["VARCHANGESTATEMENT", "STATEMENT"],
+        "-": ["VARCHANGESTATEMENT", "STATEMENT"],
         "return": ["RETURNSTATEMENT", "STATEMENT"],
         "break": ["break", ";", "STATEMENT"],
         "case": ["ɛ"],
@@ -277,18 +386,21 @@ parse_table = {
         "(": ["PARAM_MACRO_BODY"]                                      
     },
 
-    # Added
     "PARAM_MACRO_BODY": {
         "(": ["(", "PARAMLIST", ")", "MACRO_BODY"]
     },
 
-
     "PARAMLIST": {
-        "VARNAME": ["VARNAME", "PARAMLIST'"]                    # Start with one parameter and use recursion for more
+        "VARNAME": ["VARNAME", "PARAMLIST'"],                   # Start with one parameter and use recursion for more
+        "INTVAL": ["ARITH_EXPR", "PARAMLIST'"],
+        "FLOATVAL": ["ARITH_EXPR", "PARAMLIST'"],
+        "CHARVAL": ["ARITH_EXPR", "PARAMLIST'"],
+        "STRINGVAL": ["ARITH_EXPR", "PARAMLIST'"],
+        "DOUBLEVAL": ["ARITH_EXPR", "PARAMLIST'"],
     },
 
     "PARAMLIST'": {
-        ",": [",", "VARNAME", "PARAMLIST'"],                    # Allows additional parameters separated by commas
+        ",": [",", "PARAMLIST"],                    # Allows additional parameters separated by commas
         ")": ["ɛ"]                                              # Ends the parameter list
     },
 
@@ -534,6 +646,8 @@ parse_table = {
         "*": ["*", "TERM", "ARITH_EXPR'"],
         "/": ["/", "TERM", "ARITH_EXPR'"],
         ";": ["ɛ"],
+        ")": ["ɛ"],
+        "(": ["(", "PARAMLIST", ")"],
         "ɛ": []
     },
     
@@ -589,16 +703,19 @@ parse_table = {
         "[0-9][0-9]*.[0-9]*d": ["[0-9][0-9]*.[0-9]*d"],
         "[0-9][0-9]*.[0-9]*": ["[0-9][0-9]*.[0-9]*"]
     },
-    
-    "VARCHANGELINE": {
-        "VARNAME": ["VARCHANGESTATEMENT", ";"]
 
+    "VARNAMELINE":{
+        "(":["(", "PARAMLIST", ")", ";"],
+        "+":["VARCHANGESTATEMENT", ";"],
+        "-":["VARCHANGESTATEMENT", ";"],
+        "=":["VARCHANGESTATEMENT", ";"]
     },
     
     "VARCHANGESTATEMENT": {
         "VARNAME": ["VARNAME", "VARIABLE_MODIFICATION"],
         "+": ["VARIABLE_MODIFICATION", "VARNAME"],                   # Handles prefix increment (e.g., ++VARNAME)
-        "-": ["VARIABLE_MODIFICATION", "VARNAME"]   
+        "-": ["VARIABLE_MODIFICATION", "VARNAME"],
+        "=": ["VARIABLE_MODIFICATION"]
     },
     
     "VARIABLE_MODIFICATION": {
@@ -606,9 +723,7 @@ parse_table = {
         "-": ["-", "MOD_EQUAL"],
         "*": ["*", "MOD_EQUAL"],
         "/": ["/", "MOD_EQUAL"],
-        "=": ["=", "ARITH_EXPR"],
-        "++": ["++"],
-        "--": ["--"]
+        "=": ["=", "ARITH_EXPR"]
     },
 
     "MOD_EQUAL": {
@@ -617,34 +732,6 @@ parse_table = {
         "+": ["+"],
         "-": ["-"],
 
-    },
-
-    "VAROPLIST": {
-        "ɛ": [],
-        "+": ["PLUS_OPERATION"],
-        "-": ["MINUS_OPERATION"],
-        "*": ["MULTIPLY_OPERATION"],
-        "/": ["DIVIDE_OPERATION"]
-    },
-    
-    "PLUS_OPERATION": {
-        "+": ["+", "VARNAME", "VAROPLIST"],
-        "+": ["+", "ARITH_EXPR", "VAROPLIST"]
-    },
-    
-    "MINUS_OPERATION": {
-        "-": ["-", "VARNAME", "VAROPLIST"],
-        "-": ["-", "ARITH_EXPR", "VAROPLIST"]
-    },
-    
-    "MULTIPLY_OPERATION": {
-        "*": ["*", "VARNAME", "VAROPLIST"],
-        "*": ["*", "ARITH_EXPR", "VAROPLIST"]
-    },
-    
-    "DIVIDE_OPERATION": {
-        "/": ["/", "VARNAME", "VAROPLIST"],
-        "/": ["/", "ARITH_EXPR", "VAROPLIST"]
     }
 }
 
