@@ -740,14 +740,15 @@ print(parse(tokens,parse_table))  """
 #TODO: respuesta de parser 
 print("Variables: ",variables)
 #llamando al analizador semantico
-analyze_structure(variables)
+""" analyze_structure(variables) """
 
 """ ------------------------CODIGO INTERMEDIO------------------------------- """
 # Generador de codigo intermedio
-reset_intermediate_code()
-intermediate_code = generate_code(parsed_structure)
+""" reset_intermediate_code()
+intermediate_code = generate_code(parsed_structure) """
 
 """ -------------------------CODIGO OBJETO---------------------------------- """
-reset_object_code()
+""" reset_object_code()
 generate_object_code(intermediate_code)
 print_object_code()
+ """

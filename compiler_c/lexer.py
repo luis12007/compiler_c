@@ -1,4 +1,5 @@
 from prettytable import PrettyTable
+import re
 
 """ ------------------------DICCIONARIOS------------------------------- """
 # Define dictionaries for reserved words, operators, and delimiters
@@ -205,11 +206,25 @@ def imprimir_tabla(tokens):
     # Crear una tabla para los símbolos
     tabla = PrettyTable()
     tabla.field_names = ["Tipo", "Valor", "Línea"]
+    print("Tokens encontrados:")
+    print(tokens)
     for token in tokens:
         tabla.add_row([token.tipo, token.valor, token.linea])
     print(tabla)
 
 """ -------------------------VARIABLES--------------------------------- """
+class Var:
+    def __init__(self, name, value, type, source, linea):
+        self.name = name
+        self.value = value
+        self.type = type
+        self.source = source
+        self.linea = linea
+
+    def __repr__(self):
+        return f'Var({self.name}, {self.value}, {self.type}, {self.source}, Linea: {self.linea})'
+
+
 class Var:
     def __init__(self, name, value, tipo, source, linea):
         self.name = name
@@ -222,71 +237,142 @@ class Var:
         return f'Var({self.name}, {self.value}, {self.tipo}, {self.source}, Linea: {self.linea})'
 
 
+#TODO: MULTIPLE DECLARATIONS IN A LINE, DECLARATIONS, SEPARATE THE INCREMET WITH THE COMPARASON IN FOR LOOPS AND FOR MISSING
 def trabajar_variables(tokens):
     variables = []
     i = 0
-    length = len(tokens)
 
-    while i < length:
+    while i < len(tokens):
         token = tokens[i]
+        print(f"Processing token: {token}")
 
-        # Handle macros (`#define`)
-        if token.valor == '#define' and i + 2 < length:
-            macro_name = tokens[i + 1].valor  # Macro name
-            macro_body = tokens[i + 2].valor  # Macro body
-            variables.append(Var(macro_name, macro_body, "Macro", "Macro", token.linea))
-            i += 3
-            continue
-
-        # Handle function declarations
-        if token.valor in palabras_reservadas and tokens[i + 1].tipo == 'VARNAME' and tokens[i + 2].tipo == 'Inicio de paréntesis':
-            function_name = tokens[i + 1].valor  # Function name
-            return_type = palabras_reservadas[token.valor]  # Function return type
-            variables.append(Var(function_name, None, return_type, "Function", token.linea))
-            i += 3  # Skip function name and opening parenthesis
-
-            # Gather function parameters
-            while i < length and tokens[i].tipo != 'Fin de paréntesis':
-                if tokens[i].tipo == 'VARNAME' and i - 1 >= 0 and tokens[i - 1].valor in palabras_reservadas:
-                    param_type = palabras_reservadas[tokens[i - 1].valor]
-                    param_name = tokens[i].valor
-                    variables.append(Var(param_name, None, param_type, f"Function: {function_name}", tokens[i].linea))
+        # Process variable declarations (e.g., int x = 1;, float x = 1.2, y = 3.3f;)
+        if token.tipo.startswith("Tipo de dato"):
+            tipo = token.valor
+            print(f"Found type: {tipo}")
+            i += 1
+            while i < len(tokens) and tokens[i].tipo == "VARNAME":
+                name = tokens[i].valor
                 i += 1
-            continue
+                value = None
+                if i < len(tokens) and tokens[i].tipo == "Igual":
+                    i += 1
+                    if i < len(tokens):
+                        value = tokens[i].valor
+                        i += 1
+                variables.append(Var(name=name, value=value, tipo=tipo, source="declaration", linea=token.linea))
+                print(f"Declared variable: {name} with value {value} and type {tipo}")
+                # Handle multiple declarations separated by commas
+                while i < len(tokens) and tokens[i].tipo == "Coma":
+                    print(f"Handling multiple declarations, current token: {tokens[i]}")
+                    i += 1  # Skip the comma
+                    if i < len(tokens) and tokens[i].tipo == "VARNAME":
+                        name = tokens[i].valor
+                        i += 1
+                        value = None
+                        if i < len(tokens) and tokens[i].tipo == "Igual":
+                            i += 1
+                            if i < len(tokens):
+                                value = tokens[i].valor
+                                i += 1
+                        variables.append(Var(name=name, value=value, tipo=tipo, source="declaration", linea=token.linea))
+                        print(f"Declared variable (comma): {name} with value {value} and type {tipo}")
+                # Stop parsing on semicolon
+                if i < len(tokens) and tokens[i].tipo == "Punto y coma":
+                    print("End of declaration with semicolon")
+                    i += 1
+                    break
 
-        # Handle variable declarations
-        if token.valor in palabras_reservadas and i + 1 < length and tokens[i + 1].tipo == 'VARNAME':
-            tipo = palabras_reservadas[token.valor]  # Variable type
-            identifier = tokens[i + 1].valor  # Variable name
-            i += 2
-
-            # Handle multi-variable declarations
-            value = None
-            while i < length and tokens[i].tipo != 'Punto y coma':
-                if tokens[i].tipo == 'NUMERO':
-                    value = tokens[i].valor  # Assign the value to the last declared variable
-                elif tokens[i].tipo == 'VARNAME':
-                    variables.append(Var(identifier, None, tipo, "Global Variable", token.linea))
-                    identifier = tokens[i].valor  # Move to next variable in multi-declaration
+        # Process for loops (e.g., for (int i = 1; i <= n; i++))
+        elif token.tipo == "Bucle For":
+            print(f"Found for loop at line {token.linea}")
+            i += 1
+            if i < len(tokens) and tokens[i].tipo == "Inicio de paréntesis":
                 i += 1
+                # Initialization
+                if i < len(tokens) and tokens[i].tipo.startswith("Tipo de dato"):
+                    tipo = tokens[i].valor
+                    i += 1
+                    if i < len(tokens) and tokens[i].tipo == "VARNAME":
+                        name = tokens[i].valor
+                        i += 1
+                        if i < len(tokens) and tokens[i].tipo == "Igual":
+                            i += 1
+                            if i < len(tokens):
+                                init_value = tokens[i].valor
+                                i += 1
+                                variables.append(Var(name=name, value=init_value, tipo=tipo, source="forloop-init", linea=token.linea))
+                                print(f"For loop initialization: {name} = {init_value} ({tipo})")
 
-            # Assign value to the last variable declared
-            variables.append(Var(identifier, value, tipo, "Global Variable", token.linea))
-            continue
+                # Separate condition and increment
+                condition = []
+                increment = []
+                while i < len(tokens) and tokens[i].tipo != "Fin de paréntesis":
+                    print(f"Parsing for loop, current token: {tokens[i]}")
+                    if tokens[i].tipo == "Punto y coma":
+                        # Add the condition to variables
+                        if condition:
+                            condition_value = " ".join(condition).strip()
+                            variables.append(Var(name="for_condition", value=condition_value, tipo="comparison", source="forloop", linea=token.linea))
+                            print(f"For loop condition: {condition_value}")
+                        condition = []  # Clear condition for next parse
+                        i += 1  # Move to increment part
+                        while i < len(tokens) and tokens[i].tipo != "Fin de paréntesis":
+                            increment.append(tokens[i].valor)
+                            i += 1
+                        break
+                    condition.append(tokens[i].valor)
+                    i += 1
+                    
+                # Add condition and increment
+                if condition:
+                    condition_value = " ".join(condition).strip()
+                    variables.append(Var(name="for_condition", value=condition_value, tipo="comparison", source="forloop", linea=token.linea))
+                    print(f"For loop condition (final): {condition_value}")
+                if increment:
+                    increment_value = " ".join(increment).strip()
+                    variables.append(Var(name="for_increment", value=increment_value, tipo="increment", source="forloop", linea=token.linea))
+                    print(f"For loop increment: {increment_value}")
 
+        # Process if statements (e.g., if (x > 10))
+        elif token.tipo == "Condicional If":
+            print(f"Found if statement at line {token.linea}")
+            i += 1
+            condition = []
+            if i < len(tokens) and tokens[i].tipo == "Inicio de paréntesis":
+                i += 1
+                while i < len(tokens) and tokens[i].tipo != "Fin de paréntesis":
+                    condition.append(tokens[i].valor)
+                    i += 1
+                condition_value = " ".join(condition).strip()
+                variables.append(Var(name="if_condition", value=condition_value, tipo="comparison", source="if_statement", linea=token.linea))
+                print(f"If condition: {condition_value}")
+
+        # Process return statements
+        elif token.tipo == "Declaracion Return":
+            print(f"Found return statement at line {token.linea}")
+            i += 1
+            if i < len(tokens) and tokens[i].tipo == "VARNAME":
+                name = tokens[i].valor
+                variables.append(Var(name=name, value=None, tipo="return", source="return", linea=token.linea))
+                print(f"Return variable: {name}")
+
+        # Move to next token
         i += 1
+        print(f"Next token index: {i}")
 
-    # Print and return final results
     imprimir_variables(variables)
     return variables
 
+
+
+
 def imprimir_variables(variables):
-        # Crear una tabla para los símbolos
+    # Crear una tabla para los símbolos
     tabla = PrettyTable()
-    tabla.field_names = [ "Tipo","Nombre", "Valor" , "Fuente" , "Línea"]
-        # Printing the variables
+    tabla.field_names = ["Tipo", "Nombre", "Valor", "Fuente", "Línea"]
+
+    # Printing the variables
     for var in variables:
-        tabla.add_row([var.tipo,var.name, var.value, var.source, var.linea])
+        tabla.add_row([var.tipo, var.name, var.value, var.source, var.linea])
     print(tabla)
-
-
