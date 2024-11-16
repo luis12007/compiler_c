@@ -1,5 +1,5 @@
-from lexer import lexer, trabajar_variables, Token
-from parser_tokens import parse
+from lexer import lexer, Token
+from parser_tokens import parse, variable_parse
 """ from SemanticAnalyzer import analyze_structure """
 from code_generator import generate_code , reset_intermediate_code
 from object_code_generator import generate_object_code, print_object_code, reset_object_code
@@ -12,9 +12,8 @@ with open('source_code.c', 'r') as file:
 """ -----------------------------LEXER-------------------------------------- """
 # Ejecutar el lexer con variables
 tokens = lexer(codigo)
-variables = trabajar_variables(tokens)
 """ -----------------------------PARSER------------------------------------- """
-""" # Parsear el código fuente
+# Parsear el código fuente
 parse_table = {
     # Existing entries (# means comment and edditions) 
     "SOURCE": {
@@ -42,6 +41,7 @@ parse_table = {
         "long": ["FUNCTIONBLOCK", "SOURCEBLOCK"],
         "short": ["FUNCTIONBLOCK", "SOURCEBLOCK"],
         "void": ["FUNCTIONBLOCK", "SOURCEBLOCK"],
+        "main": ["ɛ"],
         "$": ["ɛ"],
         "ɛ": []
     },
@@ -84,6 +84,7 @@ parse_table = {
         "long": ["FUNCDEC", "FUNCTIONBLOCK"],
         "short": ["FUNCDEC", "FUNCTIONBLOCK"],
         "void": ["FUNCDEC", "FUNCTIONBLOCK"],
+        "main": ["ɛ"],
         "ɛ": [],
         "$":["ɛ"]
     },
@@ -219,19 +220,13 @@ parse_table = {
     },
     
     "FUNCTION": {
-        "VARNAME": ["VARNAME", "(", "FUNCINIT", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"]
+        "VARNAME": ["VARNAME", "(", "FUNCINIT", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
+        "main": ['ɛ']
     },
     
     # added "$":["ɛ"]
     "MAINFUNCTION": {
-        "int": ["FUNCTYPE", "main", "(", "FUNCINIT", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
-        "float": ["FUNCTYPE", "main", "(", "FUNCINIT", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
-        "char": ["FUNCTYPE", "main", "(", "FUNCINIT", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
-        "string": ["FUNCTYPE", "main", "(", "FUNCINIT", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
-        "double": ["FUNCTYPE", "main", "(", "FUNCINIT", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
-        "long": ["FUNCTYPE", "main", "(", "FUNCINIT", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
-        "short": ["FUNCTYPE", "main", "(", "FUNCINIT", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
-        "void": ["void", "main", "(", "FUNCINIT", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"],
+        "main": ["main", "(", "FUNCINIT", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}", "SOURCEBLOCK"],
         "$":["ɛ"]
     },
     
@@ -256,7 +251,7 @@ parse_table = {
         "VARNAME": ["VARNAME", "VARNAMELINE", "STATEMENT"],
         "+": ["VARCHANGESTATEMENT", "STATEMENT"],
         "-": ["VARCHANGESTATEMENT", "STATEMENT"],
-        "return": ["RETURNSTATEMENT", "STATEMENT"],
+        "return": ["ɛ"],
         "break": ["break", ";", "STATEMENT"],
         "case": ["ɛ"],
         "default": ["ɛ"],
@@ -436,13 +431,13 @@ parse_table = {
     
 
     "INITLIST": {
-        "int": ["INITSTATEMENT", "INITLIST'"],
-        "float": ["INITSTATEMENT", "INITLIST'"],
-        "char": ["INITSTATEMENT", "INITLIST'"],
-        "string": ["INITSTATEMENT", "INITLIST'"],
-        "double": ["INITSTATEMENT", "INITLIST'"],
-        "long": ["INITSTATEMENT", "INITLIST'"],
-        "short": ["INITSTATEMENT", "INITLIST'"],
+        "int": ["INITSTATEMENT", "INITLIST'", ";"],
+        "float": ["INITSTATEMENT", "INITLIST'", ";"],
+        "char": ["INITSTATEMENT", "INITLIST'", ";"],
+        "string": ["INITSTATEMENT", "INITLIST'", ";"],
+        "double": ["INITSTATEMENT", "INITLIST'", ";"],
+        "long": ["INITSTATEMENT", "INITLIST'", ";"],
+        "short": ["INITSTATEMENT", "INITLIST'", ";"],
         "ɛ": [],
         ")": ["ɛ"]
     },
@@ -735,20 +730,20 @@ parse_table = {
     }
 }
 
-print(parse(tokens,parse_table))  """
-""" ---------------------------SEMANTICO------------------------------------ """
+print(parse(tokens,parse_table))
+"""variables = variable_parse(tokens, parse_table)
+#---------------------------SEMANTICO------------------------------------
 #TODO: respuesta de parser 
 print("Variables: ",variables)
 #llamando al analizador semantico
-""" analyze_structure(variables) """
-
-""" ------------------------CODIGO INTERMEDIO------------------------------- """
+analyze_structure(variables)
+#------------------------CODIGO INTERMEDIO-------------------------------
 # Generador de codigo intermedio
-""" reset_intermediate_code()
-intermediate_code = generate_code(parsed_structure) """
+reset_intermediate_code()
+intermediate_code = generate_code(parsed_structure)
 
-""" -------------------------CODIGO OBJETO---------------------------------- """
-""" reset_object_code()
+#-------------------------CODIGO OBJETO----------------------------------
+reset_object_code()
 generate_object_code(intermediate_code)
 print_object_code()
- """
+"""

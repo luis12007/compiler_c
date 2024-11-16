@@ -43,7 +43,8 @@ palabras_reservadas = {
     'strlen': 'Funcion de Longitud de Cadena',
     'strcpy': 'Funcion de Copia de Cadena',
     '#include': 'Directiva de Inclusion',
-    '#define': 'Definición de Macro'
+    '#define': 'Definición de Macro',
+    'main': 'Identificador de Funcion Main'
 }
 
 # Dictionary for operators
@@ -213,31 +214,8 @@ def imprimir_tabla(tokens):
     print(tabla)
 
 """ -------------------------VARIABLES--------------------------------- """
-class Var:
-    def __init__(self, name, value, type, source, linea):
-        self.name = name
-        self.value = value
-        self.type = type
-        self.source = source
-        self.linea = linea
 
-    def __repr__(self):
-        return f'Var({self.name}, {self.value}, {self.type}, {self.source}, Linea: {self.linea})'
-
-
-class Var:
-    def __init__(self, name, value, tipo, source, linea):
-        self.name = name
-        self.value = value
-        self.tipo = tipo
-        self.source = source
-        self.linea = linea
-
-    def __repr__(self):
-        return f'Var({self.name}, {self.value}, {self.tipo}, {self.source}, Linea: {self.linea})'
-
-
-#TODO: MULTIPLE DECLARATIONS IN A LINE, DECLARATIONS, SEPARATE THE INCREMET WITH THE COMPARASON IN FOR LOOPS AND FOR MISSING
+"""#TODO: MULTIPLE DECLARATIONS IN A LINE, DECLARATIONS, SEPARATE THE INCREMET WITH THE COMPARASON IN FOR LOOPS AND FOR MISSING
 def trabajar_variables(tokens):
     variables = []
     i = 0
@@ -375,4 +353,4 @@ def imprimir_variables(variables):
     # Printing the variables
     for var in variables:
         tabla.add_row([var.tipo, var.name, var.value, var.source, var.linea])
-    print(tabla)
+    print(tabla)"""
