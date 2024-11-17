@@ -340,17 +340,4 @@ def trabajar_variables(tokens):
         print(f"Next token index: {i}")
 
     imprimir_variables(variables)
-    return variables
-
-
-
-
-def imprimir_variables(variables):
-    # Crear una tabla para los símbolos
-    tabla = PrettyTable()
-    tabla.field_names = ["Tipo", "Nombre", "Valor", "Fuente", "Línea"]
-
-    # Printing the variables
-    for var in variables:
-        tabla.add_row([var.tipo, var.name, var.value, var.source, var.linea])
-    print(tabla)"""
+    return variables"""

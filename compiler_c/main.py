@@ -1,5 +1,5 @@
-from lexer import lexer, Token
-from parser_tokens import parse, variable_parse
+from lexer import lexer
+from parser_tokens import parse, variable_parse, variable_print
 """ from SemanticAnalyzer import analyze_structure """
 from code_generator import generate_code , reset_intermediate_code
 from object_code_generator import generate_object_code, print_object_code, reset_object_code
@@ -98,9 +98,18 @@ parse_table = {
         "double": ["FUNCTYPE", "FUNCTION"],
         "long": ["FUNCTYPE", "FUNCTION"],
         "short": ["FUNCTYPE", "FUNCTION"],
-        "void": ["FUNCTYPE", "FUNCTION"]
+        "void": ["FUNCTYPE", "VOID_FUNCTION"]
     },
-    
+
+    "VOID_FUNCTION":{
+        "VARNAME": ["VARNAME", "(", "FUNCINIT", ")", "{", "STATEMENT", "VOID_RETURN", "}"],
+        "main": ["ɛ"]
+    },
+
+    "VOID_RETURN": {
+        "return": ["return", ";"],
+        "}": ["ɛ"]
+    },
 
     "FUNCINIT": {
         "int": ["FUNCINITSTATEMENT", "FUNCINIT'"],
@@ -406,21 +415,20 @@ parse_table = {
 
     # CHANGED
     "RETURNSTATEMENT": {
-    "return": ["return", "OPTIONAL_VARVAL", ";"],
-    "}": ["ɛ"]                    
+        "return": ["return", "OPTIONAL_VARVAL", ";"]
     },
 
     "OPTIONAL_VARVAL": {
-    "VARNAME": ["ARITH_EXPR"],    
-    "INTVAL": ["ARITH_EXPR"],       
-    "FLOATVAL": ["ARITH_EXPR"],    
-    "CHARVAL": ["ARITH_EXPR"],      
-    "STRINGVAL": ["ARITH_EXPR"],   
-    "DOUBLEVAL": ["ARITH_EXPR"],      
-    "(": ["ARITH_EXPR"],             
-    "ɛ": [],
-    ";": ["ɛ"]                    
-},
+        "VARNAME": ["ARITH_EXPR"],    
+        "INTVAL": ["ARITH_EXPR"],       
+        "FLOATVAL": ["ARITH_EXPR"],    
+        "CHARVAL": ["ARITH_EXPR"],      
+        "STRINGVAL": ["ARITH_EXPR"],   
+        "DOUBLEVAL": ["ARITH_EXPR"],      
+        "(": ["ARITH_EXPR"],             
+        "ɛ": [],
+        ";": ["ɛ"]                    
+    },
     
     "INITLINE": {
         "static": ["KEYWORD", "INITSTATEMENT"],
@@ -459,7 +467,6 @@ parse_table = {
         "long": ["LONGINIT"],
         "short": ["SHORTINIT"]
     },
-    
 
     # INTINIT updated
     "INTINIT": {
@@ -730,11 +737,11 @@ parse_table = {
     }
 }
 
-print(parse(tokens,parse_table))
-"""variables = variable_parse(tokens, parse_table)
-#---------------------------SEMANTICO------------------------------------
+print(parse(tokens, parse_table))
+variables = variable_parse(tokens, parse_table)
+variable_print(variables)
+"""#---------------------------SEMANTICO------------------------------------
 #TODO: respuesta de parser 
-print("Variables: ",variables)
 #llamando al analizador semantico
 analyze_structure(variables)
 #------------------------CODIGO INTERMEDIO-------------------------------

@@ -24,7 +24,7 @@ int factorial(int n) {
     /* IF STATEMENT */
     if (result2 >= 10.0) {
         result = 10;
-
+        char b = 'b';
     } else {
         result = 20;
     } 
