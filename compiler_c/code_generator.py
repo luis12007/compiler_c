@@ -1,59 +1,66 @@
-# Intermediate code instructions storage
-intermediate_code = []
-temp_count = 0  # Counter for temporary variables
+def generate_TAC_from_semantic(semantic_data):
+    """
+    Generates Three-Address Code (TAC) from the response of the semantic analyzer.
+    Args:
+        semantic_data (list of dict): The processed variables and functions from the semantic analyzer.
+    Returns:
+        tac (list): List of TAC instructions.
+    """
+    tac = []
+    temp_count = 0  # Counter for temporary variables
+    label_count = 0  # Counter for labels
 
-def generate_temp():
-    """Generate a unique temporary variable name for TAC operations."""
-    global temp_count
-    temp_var = f"t{temp_count}"
-    temp_count += 1
-    return temp_var
+    def new_temp():
+        nonlocal temp_count
+        temp = f"t{temp_count}"
+        temp_count += 1
+        return temp
 
-def add_instruction(instruction):
-    """Add an instruction to the TAC list."""
-    intermediate_code.append(instruction)
+    def new_label():
+        nonlocal label_count
+        label = f"L{label_count}"
+        label_count += 1
+        return label
 
-def generate_code(parsed_structure):
-    """Generate three-address code for the parsed structure."""
-    for statement in parsed_structure:
-        if statement["type"] == "declaration":
-            handle_declaration(statement["name"], statement["var_type"], statement.get("value"))
-        elif statement["type"] == "assignment":
-            handle_assignment(statement["name"], statement["value"])
-        elif statement["type"] == "return":
-            handle_return(statement["value"])
+    for entry in semantic_data:
+        name = entry["Name"]
+        var_type = entry["Type"]
+        scope = entry["Scope"]
+        value = entry["Value"]
+        parameters = entry.get("Parameters")
 
-def handle_declaration(name, var_type, value=None):
-    """Generate TAC for variable declaration with optional initialization."""
-    if value is not None:
-        add_instruction(f"{name} = {value}")
-    else:
-        add_instruction(f"{name} = 0  # default initialization")
+        # Handle function declarations
+        if scope == "Global" and var_type in ["int", "void", "float", "char"] and value == "null":
+            tac.append(f"func {name}()")
 
-def handle_assignment(name, expression):
-    """Generate TAC for variable assignment, handling expressions."""
-    # Assuming expression is a simple "x op y" or "value"
-    if isinstance(expression, str) and " " in expression:
-        left, operator, right = expression.split()
-        temp_var = generate_temp()
-        add_instruction(f"{temp_var} = {left} {operator} {right}")
-        add_instruction(f"{name} = {temp_var}")
-    else:
-        # Direct assignment, e.g., `name = value`
-        add_instruction(f"{name} = {expression}")
+        # Handle variable declarations with initialization
+        elif scope.startswith("Function scope") or scope.startswith("main scope"):
+            if value not in ["null", None]:
+                tac.append(f"{name} = {value}")
 
-def handle_return(value):
-    """Generate TAC for return statement."""
-    add_instruction(f"RETURN {value}")
+        # Handle arithmetic operations inside loops or functions
+        elif scope == "For Loop" and name != "return":
+            if value:
+                tac.append(f"{name} = {value}")
 
-def print_intermediate_code():
-    """Print the generated TAC."""
-    print("Three-Address Code (TAC):")
-    for instruction in intermediate_code:
-        print(instruction)
+        # Handle conditionals
+        elif scope == "If Statement":
+            if name != "return":
+                condition = new_temp()
+                tac.append(f"{condition} = {value}")
+                label = new_label()
+                tac.append(f"if {condition} goto {label}")
+                tac.append(f"label {label}")
 
-def reset_intermediate_code():
-    """Reset TAC and temporary counter for fresh code generation."""
-    global intermediate_code, temp_count
-    intermediate_code.clear()
-    temp_count = 0
+        # Handle return statements
+        elif name == "return":
+            tac.append(f"return {value}")
+
+        # Handle macros and defines
+        elif scope == "DEFINE":
+            if parameters:
+                tac.append(f"#define {name}({parameters}) {value}")
+            else:
+                tac.append(f"#define {name} {value}")
+
+    return tac

@@ -135,26 +135,16 @@ def parse(tokens, parse_table):
 
 """---------------------------VARIABLES--------------------"""
 class Var:
-    def __init__(self, name, value, type, scope, line):
+    def __init__(self, name, value, var_type, scope, line, parameters=None):
         self.name = name
         self.value = value
-        self.type = type
+        self.var_type = var_type  
         self.scope = scope
         self.line = line
+        self.parameters = parameters
 
     def __repr__(self):
-        return f'Var({self.name}, {self.value}, {self.type}, {self.scope}, Linea: {self.line})'
-
-def variable_print(variables):
-    # Crear una tabla para los símbolos
-    print(variables)
-    table = PrettyTable()
-    table.field_names = ["Name", "Value", "Type", "Scope", "Line"]
-
-    # Printing the variables
-    for var in variables:
-        table.add_row([var.name, var.value, var.type, var.scope, var.line])
-    print(table)
+        return f"Var({self.name}, {self.value}, {self.var_type}, {self.scope}, Line: {self.line}, Parameters: {self.parameters})"
 
 def variable_parse(tokens, parse_table):
     #Variable Things
@@ -452,3 +442,16 @@ def variable_parse(tokens, parse_table):
                 f"Unexpected token '{current_token.valor}' (type '{current_token.tipo}') at line {current_token.linea}"
             )
     return variables
+
+
+
+def variable_print(variables):
+    # Crear una tabla para los símbolos
+    print(variables)
+    table = PrettyTable()
+    table.field_names = ["Name", "Value", "Type", "Scope", "Line" , "params"]
+
+    # Printing the variables
+    for var in variables:
+        table.add_row([var.name, var.value, var.var_type, var.scope, var.line, var.parameters])
+    print(table)

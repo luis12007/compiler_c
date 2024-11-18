@@ -1,8 +1,8 @@
 from lexer import lexer
-from parser_tokens import parse, variable_parse, variable_print
-""" from SemanticAnalyzer import analyze_structure """
-from code_generator import generate_code , reset_intermediate_code
-from object_code_generator import generate_object_code, print_object_code, reset_object_code
+from parser_tokens import parse, variable_parse, variable_print, Var
+from SemanticAnalyzer import semantic_analyzer
+from code_generator import generate_TAC_from_semantic
+from object_code_generator import object_parser , object_code_to_binary
 
 # Leer el archivo source_code.c
 with open('source_code.c', 'r') as file:
@@ -740,17 +740,49 @@ parse_table = {
 print(parse(tokens, parse_table))
 variables = variable_parse(tokens, parse_table)
 variable_print(variables)
-"""#---------------------------SEMANTICO------------------------------------
-#TODO: respuesta de parser 
-#llamando al analizador semantico
-analyze_structure(variables)
-#------------------------CODIGO INTERMEDIO-------------------------------
-# Generador de codigo intermedio
-reset_intermediate_code()
-intermediate_code = generate_code(parsed_structure)
+#---------------------------SEMANTICO------------------------------------
+print("\n SEMANTICO\n")
+#TODO: change variable_parse to vars_list
+vars_list = [
+    # Defines
+    Var("VECTOR", "vi", "INT", "DEFINE", 1),
+    Var("loop", "for(int x = 0; x < n; ++x)", "MACRO", "DEFINE", 2, "(x, n)"),
+    Var("macro", "(x < 10)", "MACRO", "DEFINE", 3, "(x)"),
+    Var("macro3", "(x * 10)", "MACRO", "DEFINE", 4, "(x)"),
 
+    # Variables in factorial function
+    Var("result", "1", "int", "Function scope: factorial", 10),
+    Var("result2", "20.2", "float", "Function scope: factorial", 10),
+    Var("result3", "3.3f", "float", "Function scope: factorial", 10),
+    Var("a", "'a'", "char", "Function scope: factorial", 10),
+    Var("i", "1", "int", "For Loop", 12),
+    Var("b", "'b'", "char", "If Statement", 14),
+    Var("return", "2", "int", "Function scope: factorial", 15),
+
+    # Variables in main function
+    Var("x", "5", "int", "main scope", 1),
+    Var("y", "'y'", "char", "main scope", 1),
+
+    # Function declarations
+    Var("factorial", "null", "int", "Global", 8),
+    Var("main", "null", "void", "Global", 20),
+]
+
+#llamando al analizador semantico
+vars = semantic_analyzer(vars_list)  
+print(vars[0])
+#------------------------CODIGO INTERMEDIO-------------------------------
+print("\nCODIGO INTERMEDIO\n")
+tac = generate_TAC_from_semantic(vars[0])
+print(tac)
 #-------------------------CODIGO OBJETO----------------------------------
-reset_object_code()
-generate_object_code(intermediate_code)
-print_object_code()
-"""
+print("\nCODIGO OBJETO\n")
+
+object_code = object_parser(tac)
+
+binary = object_code_to_binary(object_code)
+
+print("\nCODIGO BINARIO\n")
+
+print(binary)
+

@@ -1,80 +1,160 @@
-# Object code instructions storage
-object_code = []
-registers = ["R1", "R2", "R3", "R4"]  # Simulated registers
-register_usage = {}  # Track variable to register mappings
+def object_parser(tac):
+    """
+    Converts TAC (Three-Address Code) into object code or assembly-like instructions.
+    Args:
+        tac (list): List of TAC instructions.
+    Returns:
+        object_code (list): List of object code or assembly instructions.
+    """
+    object_code = []
+    label_count = 0  # Keep track of labels for jumps
 
-def reset_object_code():
-    """Reset object code and register usage for fresh code generation."""
-    global object_code, register_usage
-    object_code.clear()
-    register_usage.clear()
+    def get_next_label():
+        nonlocal label_count
+        label = f"label_{label_count}"
+        label_count += 1
+        return label
 
-def get_register(var):
-    """Allocate or reuse a register for a variable."""
-    # Check if the variable is already in a register
-    if var in register_usage:
-        return register_usage[var]
-    
-    # Find an available register
-    for reg in registers:
-        if reg not in register_usage.values():
-            register_usage[var] = reg
-            return reg
-    
-    # Spill: if all registers are full, free one and reuse it (simple strategy)
-    spilled_var, reg = register_usage.popitem()
-    object_code.append(f"STORE {reg}, {spilled_var}")
-    register_usage[var] = reg
-    return reg
-
-def add_instruction(instruction):
-    """Add an instruction to the object code list."""
-    object_code.append(instruction)
-
-def generate_object_code(tac):
-    """Generate object code from three-address code (TAC)."""
     for instruction in tac:
-        parts = instruction.split()
-        
-        if len(parts) == 3 and parts[1] == '=':
-            # Handle direct assignment (e.g., result = 1)
-            var, value = parts[0], parts[2]
-            reg = get_register(var)
-            add_instruction(f"LOAD {reg}, {value}")
-            add_instruction(f"STORE {reg}, {var}")
-        
-        elif len(parts) == 5 and parts[3] in {'+', '-', '*', '/'}:
-            # Handle arithmetic operation (e.g., t0 = result * i)
-            dest, left, op, right = parts[0], parts[2], parts[3], parts[4]
-            reg_left = get_register(left)
-            reg_right = get_register(right)
-            reg_dest = get_register(dest)
+        if instruction.startswith("#define"):
+            # Skip macros and defines; no direct object code mapping
+            continue
 
-            # Load left operand if not in register
-            add_instruction(f"LOAD {reg_left}, {left}")
-            add_instruction(f"LOAD {reg_right}, {right}")
-            
-            # Perform operation
-            if op == '+':
-                add_instruction(f"ADD {reg_dest}, {reg_left}, {reg_right}")
-            elif op == '-':
-                add_instruction(f"SUB {reg_dest}, {reg_left}, {reg_right}")
-            elif op == '*':
-                add_instruction(f"MUL {reg_dest}, {reg_left}, {reg_right}")
-            elif op == '/':
-                add_instruction(f"DIV {reg_dest}, {reg_left}, {reg_right}")
-            
-            # Store result
-            add_instruction(f"STORE {reg_dest}, {dest}")
+        elif instruction.startswith("func"):
+            # Translate function definitions
+            function_name = instruction.split()[1].replace("()", "")
+            object_code.append(f"{function_name}_entry:")
+            object_code.append("PUSH BP")  # Save base pointer
+            object_code.append("MOV BP, SP")  # Set new base pointer
+            continue
 
-        elif parts[0] == "RETURN":
-            # Handle return (e.g., RETURN result)
-            reg = get_register(parts[1])
-            add_instruction(f"LOAD {reg}, {parts[1]}")
-            add_instruction(f"RETURN {reg}")
+        elif instruction.startswith("return"):
+            # Handle return statements
+            return_value = instruction.split('=')[1].strip()
+            object_code.append(f"MOV AX, {return_value}")  # Move return value to accumulator
+            object_code.append("POP BP")  # Restore base pointer
+            object_code.append("RET")  # Return from function
+            continue
 
-def print_object_code():
-    """Print the generated object code."""
-    print("Object Code:")
-    for instruction in object_code:
-        print(instruction)
+        elif instruction.startswith("if"):
+            # Handle conditional jumps
+            condition = instruction.split()[1]
+            label = get_next_label()
+            object_code.append(f"CMP {condition}, 0")
+            object_code.append(f"JE {label}")
+            continue
+
+        elif instruction.startswith("label"):
+            # Handle labels
+            label_name = instruction.split()[1]
+            object_code.append(f"{label_name}:")
+            continue
+
+        else:
+            # Handle general assignments
+            if "=" in instruction:
+                dest, expr = instruction.split("=")
+                dest = dest.strip()
+                expr = expr.strip()
+
+                if "+" in expr or "-" in expr or "*" in expr or "/" in expr:
+                    # Handle arithmetic operations
+                    operands = expr.split()
+                    op1 = operands[0]
+                    operator = operands[1]
+                    op2 = operands[2]
+
+                    object_code.append(f"MOV AX, {op1}")
+                    if operator == "+":
+                        object_code.append(f"ADD AX, {op2}")
+                    elif operator == "-":
+                        object_code.append(f"SUB AX, {op2}")
+                    elif operator == "*":
+                        object_code.append(f"MUL {op2}")
+                    elif operator == "/":
+                        object_code.append(f"DIV {op2}")
+                    object_code.append(f"MOV {dest}, AX")
+                else:
+                    # Simple assignment
+                    object_code.append(f"MOV {dest}, {expr}")
+    print(object_code)
+    return object_code
+
+
+def object_code_to_binary(object_code):
+    """
+    Converts object code to binary instructions based on a predefined ISA.
+    Args:
+        object_code (list): List of assembly-like instructions.
+    Returns:
+        binary_code (list): List of binary instructions.
+    """
+
+    # Define an example ISA with opcodes
+    isa = {
+        "MOV": "0001",  
+        "ADD": "0010",  
+        "SUB": "0011",  
+        "MUL": "0100",  
+        "DIV": "0101",  
+        "CMP": "0110",  
+        "JE": "0111",   
+        "PUSH": "1000", 
+        "POP": "1001",  
+        "RET": "1010",  
+        "label": "1011"
+    }
+
+    # Example register mapping
+    registers = {
+        "AX": "000",
+        "BP": "001",
+        "SP": "010",
+        "t0": "011", 
+        "t1": "100"  
+    }
+
+    binary_code = []
+
+    for line in object_code:
+        parts = line.split()
+
+        # Process instructions
+        if parts[0] in isa:
+            opcode = isa[parts[0]]
+
+            if parts[0] == "MOV":
+                dest = registers.get(parts[1].strip(","), "111")  # Destination register
+                src = registers.get(parts[2], "000")  # Source register or immediate value
+                binary_code.append(f"{opcode} {dest} {src}")
+
+            elif parts[0] in {"ADD", "SUB", "MUL", "DIV"}:
+                dest = registers.get(parts[1].strip(","), "111")
+                src = registers.get(parts[2], "000")
+                binary_code.append(f"{opcode} {dest} {src}")
+
+            elif parts[0] == "CMP":
+                src = registers.get(parts[1].strip(","), "000")
+                binary_code.append(f"{opcode} {src}")
+
+            elif parts[0] == "JE":
+                label = parts[1]
+                binary_code.append(f"{opcode} {label}")
+
+            elif parts[0] == "PUSH":
+                reg = registers.get(parts[1], "111")
+                binary_code.append(f"{opcode} {reg}")
+
+            elif parts[0] == "POP":
+                reg = registers.get(parts[1], "111")
+                binary_code.append(f"{opcode} {reg}")
+
+            elif parts[0] == "RET":
+                binary_code.append(opcode)
+
+        # Process labels
+        elif line.endswith(":"):
+            label_name = line.replace(":", "")
+            binary_code.append(f"{isa['label']} {label_name}")
+
+    return binary_code
