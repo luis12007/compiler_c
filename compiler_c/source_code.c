@@ -22,9 +22,9 @@ int factorial(int n) {
     }
 
     /* IF STATEMENT */
-    if (y >= 10.0) {
+    if (result2 >= 10.0) {
         result = 10;
-
+        char b = 'b';
     } else {
         result = 20;
     } 
@@ -34,5 +34,5 @@ int factorial(int n) {
 
 /* MAIN FUNCTION */
 void main() {
-return;
+    return;
 }

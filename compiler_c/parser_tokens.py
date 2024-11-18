@@ -1,3 +1,4 @@
+from prettytable import PrettyTable
 import re
 
 class Token:
@@ -33,12 +34,6 @@ def parse(tokens, parse_table):
         print(f"\nCurrent Stack: {stack}")
         print(f"Top of Stack: {top}")
         print(f"Current Token: {current_token.valor} (Type: {current_token.tipo}) at Line: {current_token.linea}")
-
-        # Handle semicolon within `STATEMENT` by skipping it
-        if top == "INITLIST'" and current_token.valor == ";" :
-            print("Skipping semicolon within STATEMENT context.")
-            index += 1
-            continue
         
         # Check if `top` is a regex-based non-terminal
         if top in regex_patterns and regex_patterns[top]:  # Only attempt regex if patterns exist for this non-terminal
@@ -112,3 +107,322 @@ def parse(tokens, parse_table):
         print(len(tokens))
         print("\nParsing ended with issues: Stack or token list not empty.")
         return "no"
+
+"""---------------------------VARIABLES--------------------"""
+class Var:
+    def __init__(self, name, value, type, scope, line):
+        self.name = name
+        self.value = value
+        self.type = type
+        self.scope = scope
+        self.line = line
+
+    def __repr__(self):
+        return f'Var({self.name}, {self.value}, {self.type}, {self.scope}, Linea: {self.linea})'
+
+def variable_print(variables):
+    # Crear una tabla para los símbolos
+    table = PrettyTable()
+    table.field_names = ["Name", "Value", "Type", "Scope", "Line"]
+
+    # Printing the variables
+    for var in variables:
+        table.add_row([var.name, var.value, var.type, var.scope, var.line])
+    print(table)
+
+def variable_parse(tokens, parse_table):
+    #Variable Things
+    current_scope = ["Invalid", "Invalid"]
+    variable_declaration = False
+    variable_name = ""
+    variable_type = ""
+    value_flag = False
+    variable_value = ""
+    variable_line = ""
+    variables = []
+    define_line = -1
+    in_define = False
+    #Everything else
+    stack = ['$']
+    stack.append('SOURCE')  # Start with the grammar's starting symbol
+    tokens.append(Token('$', '$', -1))  # End-of-input marker
+    index = 0  # Track the position in the token list
+    # Precompile regex patterns from the parse table for only the non-terminals that are regex-based
+    regex_patterns = {
+        non_terminal: {pattern: re.compile(pattern) for pattern in parse_table[non_terminal] if "[" in pattern}
+        for non_terminal in parse_table
+    }
+    while stack:
+        top = stack.pop()
+        current_token = tokens[index]
+        #print(current_scope)
+        # Check if `top` is a regex-based non-terminal
+        if top in regex_patterns and regex_patterns[top]:  # Only attempt regex if patterns exist for this non-terminal
+            matched = False
+            for pattern, compiled_regex in regex_patterns[top].items():
+                if compiled_regex.fullmatch(current_token.valor):
+                    matched = True
+                    index += 1  # Move to the next token
+                    break
+            if matched:
+                #print("1")
+                if(variable_declaration and not value_flag):
+                    variable_name = current_token.valor
+                    variable_line = current_token.linea
+                elif(value_flag):
+                    variable_value += current_token.valor
+                continue
+            else:
+                #print("2")
+                if top in parse_table:
+                    #print("A")
+                    token_key = current_token.valor if current_token.valor in parse_table[top] else current_token.tipo
+                    if token_key in parse_table[top]:
+                        rule = parse_table[top][token_key]
+                        #Declaration setting
+                        if(top == "INITSTATEMENT" or top == "FUNCINIT"):
+                            variable_declaration = True
+                        #Scope checking
+                        if(top == "FUNCTION" or top == "VOID_FUNC"):
+                            current_scope.append("Function")
+                        elif(top == "FORVAR"):
+                            current_scope.append("For Loop")
+                        elif(top == "IF" or top == "ELSEIF"):
+                            current_scope.append("If Statement")
+                        elif(top == "SWITCHSTATEMENT"):
+                            current_scope.append("Switch Statement")
+                        elif(top == "DEFINEBLOCK"):
+                            in_define = True
+                            define_line = current_token.linea
+                        if rule != ['ɛ']:
+                            stack.extend(reversed(rule))
+                    continue
+                elif top == current_token.valor:
+                    #print("B")
+                    if(top == "=" and variable_declaration):
+                        value_flag = True
+                    elif(top == "," and variable_declaration):
+                        value_flag = False
+                    elif(value_flag and top != ";" and top != ")"):
+                        variable_value += current_token.valor
+                    #Type checking
+                    match top :
+                        case "int":
+                            variable_type = "int"
+                            
+                        case "float":
+                            variable_type = "float"
+                            
+                        case "char":
+                            variable_type = "char"
+                            
+                        case "string":
+                            variable_type = "string"
+                            
+                        case "double":
+                            variable_type = "double"
+                            
+                        case "long":
+                            variable_type = "long"
+                            
+                        case "short":
+                            variable_type = "short"
+                            
+                    # Variable saving
+                    if(current_scope[-1] == "Global" and variable_declaration and current_token.valor == ";"):
+                        variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
+                        variable_declaration = False
+                        variable_name = ""
+                        variable_type = ""
+                        value_flag = False
+                        variable_value = ""
+                        variable_line = ""
+                    elif(current_scope[-1] == "Function" and variable_declaration and current_token.valor == ")"):
+                        variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
+                        variable_declaration = False
+                        variable_name = ""
+                        variable_type = ""
+                        value_flag = False
+                        variable_value = ""
+                        variable_line = ""
+                    elif(current_scope[-1] == "Function" and variable_declaration and current_token.valor == ";"):
+                        variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
+                        variable_declaration = False
+                        variable_name = ""
+                        variable_type = ""
+                        value_flag = False
+                        variable_value = ""
+                        variable_line = ""
+                    elif(current_scope[-1] == "For Loop" and variable_declaration and current_token.valor == ";"):
+                        variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
+                        variable_declaration = False
+                        variable_name = ""
+                        variable_type = ""
+                        value_flag = False
+                        variable_value = ""
+                        variable_line = ""
+                    elif(current_scope[-1] == "If Statement" and variable_declaration and current_token.valor == ";"):
+                        variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
+                        variable_declaration = False
+                        variable_name = ""
+                        variable_type = ""
+                        value_flag = False
+                        variable_value = ""
+                        variable_line = ""
+                    elif(current_scope[-1] == "Switch Statement" and variable_declaration and current_token.valor == ";"):
+                        variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
+                        variable_declaration = False
+                        variable_name = ""
+                        variable_type = ""
+                        value_flag = False
+                        variable_value = ""
+                        variable_line = ""
+                    #Saving without end of init statements
+                    elif(variable_declaration and current_token.valor == ","):
+                        variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
+                        variable_name = ""
+                        value_flag = False
+                        variable_value = ""
+                        variable_line = ""
+                    
+                    if(current_token.valor == "}"):
+                        current_scope.pop()
+                    elif((in_define and define_line != current_token.linea)):
+                        in_define = False
+                        current_scope.pop()
+                    index += 1  # Move to the next token
+                    continue
+                else:
+                    print(f"Error: No matching regex rule for '{top}' with token '{current_token.valor}'")
+                    raise SyntaxError(
+                        f"Unexpected token '{current_token.valor}' (type '{current_token.tipo}') at line {current_token.linea}"
+                    )
+        # Non-regex non-terminal handling
+        elif top in parse_table:
+            token_key = current_token.valor if current_token.valor in parse_table[top] else current_token.tipo
+            if token_key in parse_table[top]:
+                #print("A2")
+                rule = parse_table[top][token_key]
+                #Declaration setting
+                if(top == "INITSTATEMENT" or top == "FUNCINIT"):
+                    variable_declaration = True
+                #Scope checking
+                if(top == "FUNCTION" or top == "VOID_FUNC"):
+                    current_scope.append("Function")
+                elif(top == "FORVAR"):
+                    current_scope.append("For Loop")
+                elif(top == "IF" or top == "ELSEIF"):
+                    current_scope.append("If Statement")
+                elif(top == "SWITCHSTATEMENT"):
+                    current_scope.append("Switch Statement")
+                elif(top == "DEFINEBLOCK"):
+                    define_line = current_token.linea
+                    in_define = True
+                if rule != ['ɛ']:
+                    stack.extend(reversed(rule))
+            else:
+                print(f"Error: No rule for '{top}' with current token '{current_token.valor}' (Type: '{current_token.tipo}')")
+                raise SyntaxError(
+                    f"Unexpected token '{current_token.valor}' (type '{current_token.tipo}') at line {current_token.linea}"
+                )
+        elif top == current_token.valor:
+            #print("B2")
+            if(top == "=" and variable_declaration):
+                value_flag = True
+            elif(top == "," and variable_declaration):
+                value_flag = False
+            elif(value_flag and top != ";" and top != ")"):
+                variable_value += current_token.valor
+            #Type checking
+            match top:
+                case "int":
+                    variable_type = "int"
+                    
+                case "float":
+                    variable_type = "float"
+                    
+                case "char":
+                    variable_type = "char"
+                    
+                case "string":
+                    variable_type = "string"
+                    
+                case "double":
+                    variable_type = "double"
+                    
+                case "long":
+                    variable_type = "long"
+                    
+                case "short":
+                    variable_type = "short"
+                    
+            # Variable saving
+            if(current_scope[-1] == "Global" and variable_declaration and current_token.valor == ";"):
+                variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
+                variable_declaration = False
+                variable_name = ""
+                variable_type = ""
+                value_flag = False
+                variable_value = ""
+                variable_line = ""
+            elif(current_scope[-1] == "Function" and variable_declaration and current_token.valor == ")"):
+                variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
+                variable_declaration = False
+                variable_name = ""
+                variable_type = ""
+                value_flag = False
+                variable_value = ""
+                variable_line = ""
+            elif(current_scope[-1] == "Function" and variable_declaration and current_token.valor == ";"):
+                variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
+                variable_declaration = False
+                variable_name = ""
+                variable_type = ""
+                value_flag = False
+                variable_value = ""
+                variable_line = ""
+            elif(current_scope[-1] == "For Loop" and variable_declaration and current_token.valor == ";"):
+                variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
+                variable_declaration = False
+                variable_name = ""
+                variable_type = ""
+                value_flag = False
+                variable_value = ""
+                variable_line = ""
+            elif(current_scope[-1] == "If Statement" and variable_declaration and current_token.valor == ";"):
+                variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
+                variable_declaration = False
+                variable_name = ""
+                variable_type = ""
+                value_flag = False
+                variable_value = ""
+                variable_line = ""
+            elif(current_scope[-1] == "Switch Statement" and variable_declaration and current_token.valor == ";"):
+                variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
+                variable_declaration = False
+                variable_name = ""
+                variable_type = ""
+                value_flag = False
+                variable_value = ""
+                variable_line = ""
+            #Saving without end of init statements
+            elif(variable_declaration and current_token.valor == ","):
+                variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
+                variable_name = ""
+                value_flag = False
+                variable_value = ""
+                variable_line = ""
+            if(current_token.valor == "}"):
+                current_scope.pop()
+            elif((in_define and define_line != current_token.linea)):
+                in_define = False
+                current_scope.pop()
+            index += 1  # Move to the next token
+            continue
+
+        else:
+            print(f"Error: Expected '{top}', but got '{current_token.valor}' (Type: {current_token.tipo})")
+            raise SyntaxError(
+                f"Unexpected token '{current_token.valor}' (type '{current_token.tipo}') at line {current_token.linea}"
+            )
+    return variables
