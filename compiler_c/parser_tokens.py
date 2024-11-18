@@ -10,6 +10,35 @@ class Token:
     def __repr__(self):
         return f"Token({self.tipo}, {self.valor}, Linea: {self.linea})"
 
+def draw_box(content):
+    """Helper function to draw a box with content."""
+    lines = content.split("\n")
+    width = max(len(line) for line in lines)
+    border = "+" + "-" * (width + 2) + "+"
+    result = [border]
+    for line in lines:
+        result.append(f"| {line.ljust(width)} |")
+    result.append(border)
+    return "\n".join(result)
+
+def is_terminal(element):
+    """Determine if the given grammar element is a terminal."""
+    return not element.isupper()
+
+def display_syntax_tree(stack, token, result, transition):
+    """Display the syntax tree representation with transitions and token details."""
+    print("\nCurrent Syntax Tree:")
+    for i, element in enumerate(reversed(stack)):
+        element_type = "Terminal" if is_terminal(element) else "Non-Terminal"
+        box_content = (
+            f"{element_type}: {element}\nToken: {token.valor} ({token.tipo})\nResult: {result}\nTransition: {transition}"
+        )
+        print(draw_box(box_content))
+        if i != len(stack) - 1:
+            print("    |")
+            print("    |")
+            print("    |")
+
 def parse(tokens, parse_table):
     stack = ['$']
     stack.append('SOURCE')  # Start with the grammar's starting symbol
@@ -31,45 +60,44 @@ def parse(tokens, parse_table):
         top = stack.pop()
         current_token = tokens[index]
 
-        print(f"\nCurrent Stack: {stack}")
-        print(f"Top of Stack: {top}")
-        print(f"Current Token: {current_token.valor} (Type: {current_token.tipo}) at Line: {current_token.linea}")
-        
+        result = ""
+        transition = f"{top} -> ɛ"  # Default transition for empty rules
+
         # Check if `top` is a regex-based non-terminal
         if top in regex_patterns and regex_patterns[top]:  # Only attempt regex if patterns exist for this non-terminal
             matched = False
             for pattern, compiled_regex in regex_patterns[top].items():
                 if compiled_regex.fullmatch(current_token.valor):
-                    print(f"Regex match found for '{top}' pattern '{pattern}' with token '{current_token.valor}'")
+                    result = f"Regex match: {current_token.valor}"
                     matched = True
                     index += 1  # Move to the next token
                     break
             if matched:
+                display_syntax_tree(stack + [top], current_token, result, transition)
                 continue
             else:
                 if top in parse_table:
                     token_key = current_token.valor if current_token.valor in parse_table[top] else current_token.tipo
                     if token_key in parse_table[top]:
                         rule = parse_table[top][token_key]
-                        print(f"Rule found: {top} -> {rule}")
+                        result = f"Rule found: {top} -> {rule}"
+                        transition = f"{top} -> {rule}"
                         if rule != ['ɛ']:
-                            print(f"Expanding rule: Pushing {list(reversed(rule))} onto stack")
                             stack.extend(reversed(rule))
                     else:
-                        print(f"Error: No rule for '{top}' with current token '{current_token.valor}' (Type: '{current_token.tipo}')")
-                        raise SyntaxError(
-                            f"Unexpected token '{current_token.valor}' (type '{current_token.tipo}') at line {current_token.linea}"
-                        )
+                        result = f"Error: No rule for '{top}' with current token '{current_token.valor}'"
+                        raise SyntaxError(result)
+                    display_syntax_tree(stack + [top], current_token, result, transition)
                     continue
                 elif top == current_token.valor:
-                    print(f"Terminal match found: {top} == {current_token.valor}")
+                    result = f"Terminal match: {top} == {current_token.valor}"
+                    transition = f"{top} -> terminal"
                     index += 1  # Move to the next token
+                    display_syntax_tree(stack + [top], current_token, result, transition)
                     continue
                 else:
-                    print(f"Error: No matching regex rule for '{top}' with token '{current_token.valor}'")
-                    raise SyntaxError(
-                        f"Unexpected token '{current_token.valor}' (type '{current_token.tipo}') at line {current_token.linea}"
-                    )
+                    result = f"Error: No matching regex rule for '{top}' with token '{current_token.valor}'"
+                    raise SyntaxError(result)
 
         # Non-regex non-terminal handling
         elif top in parse_table:
@@ -77,36 +105,33 @@ def parse(tokens, parse_table):
 
             if token_key in parse_table[top]:
                 rule = parse_table[top][token_key]
-                print(f"Rule found: {top} -> {rule}")
+                result = f"Rule found: {top} -> {rule}"
+                transition = f"{top} -> {rule}"
                 if rule != ['ɛ']:
-                    print(f"Expanding rule: Pushing {list(reversed(rule))} onto stack")
                     stack.extend(reversed(rule))
             else:
-                print(f"Error: No rule for '{top}' with current token '{current_token.valor}' (Type: '{current_token.tipo}')")
-                raise SyntaxError(
-                    f"Unexpected token '{current_token.valor}' (type '{current_token.tipo}') at line {current_token.linea}"
-                )
+                result = f"Error: No rule for '{top}' with current token '{current_token.valor}'"
+                raise SyntaxError(result)
+            display_syntax_tree(stack + [top], current_token, result, transition)
 
         elif top == current_token.valor:
-            print(f"Terminal match found: {top} == {current_token.valor}")
+            result = f"Terminal match: {top} == {current_token.valor}"
+            transition = f"{top} -> terminal"
             index += 1  # Move to the next token
+            display_syntax_tree(stack + [top], current_token, result, transition)
             continue
 
         else:
-            print(f"Error: Expected '{top}', but got '{current_token.valor}' (Type: {current_token.tipo})")
-            raise SyntaxError(
-                f"Unexpected token '{current_token.valor}' (type '{current_token.tipo}') at line {current_token.linea}"
-            )
+            result = f"Error: Expected '{top}', but got '{current_token.valor}'"
+            raise SyntaxError(result)
 
     if index == len(tokens) and not stack:
         print("\nParsing completed successfully: Syntax correct.")
         return "yes"
     else:
-        print(stack)
-        print(index)
-        print(len(tokens))
         print("\nParsing ended with issues: Stack or token list not empty.")
         return "no"
+
 
 """---------------------------VARIABLES--------------------"""
 class Var:
@@ -118,10 +143,11 @@ class Var:
         self.line = line
 
     def __repr__(self):
-        return f'Var({self.name}, {self.value}, {self.type}, {self.scope}, Linea: {self.linea})'
+        return f'Var({self.name}, {self.value}, {self.type}, {self.scope}, Linea: {self.line})'
 
 def variable_print(variables):
     # Crear una tabla para los símbolos
+    print(variables)
     table = PrettyTable()
     table.field_names = ["Name", "Value", "Type", "Scope", "Line"]
 
