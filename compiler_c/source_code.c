@@ -12,7 +12,7 @@
 int factorial(int n) {
 
     /* VARIABLES */
-    int result = 1;
+    int result = 1
     float result2 = 20.2, result3 = 3.3f;
     char a = 'a';
 
