@@ -105,10 +105,11 @@ def lexer(codigo):
 
     while i < len(codigo):  # Ensure we don't go out of bounds
         char = codigo[i]
-
+        #print(linea)
         # Handle new lines
         if char == '\n':
             linea += 1
+            #print(linea)
             i += 1
             continue
 
@@ -124,12 +125,13 @@ def lexer(codigo):
             while i < len(codigo) - 1 and not (codigo[i] == '*' and codigo[i + 1] == '/'):
                 if codigo[i] == '\n':
                     linea += 1
+                    #print(linea)
                 i += 1
             i += 2
             continue
 
         # Ignore whitespace
-        elif char.isspace():
+        elif char == ' ':
             i += 1
             continue
 
@@ -137,7 +139,7 @@ def lexer(codigo):
             append = []
             while i < len(codigo):  # Added boundary check
                 char = codigo[i]  # <--- Edited to reassign `char` within bounds
-                if char.isspace() or char == '\n': 
+                if char == ' ' or char == '\n': 
                     break
                 if char in especiales.keys():
                     if current_token != "":
@@ -182,7 +184,7 @@ def lexer(codigo):
                 else:
                     current_token += char
 
-                i += 1  
+                i += 1
                 if i >= len(codigo): 
                     break
 
@@ -196,6 +198,8 @@ def lexer(codigo):
 
             for item in append:
                 tokens.append(item)
+            if(char == '\n'):
+                linea += 1
 
         i += 1 
         current_token = "" 
@@ -207,8 +211,8 @@ def imprimir_tabla(tokens):
     # Crear una tabla para los símbolos
     tabla = PrettyTable()
     tabla.field_names = ["Tipo", "Valor", "Línea"]
-    print("Tokens encontrados:")
-    print(tokens)
+    #print("Tokens encontrados:")
+    #print(tokens)
     for token in tokens:
         tabla.add_row([token.tipo, token.valor, token.linea])
     print(tabla)
