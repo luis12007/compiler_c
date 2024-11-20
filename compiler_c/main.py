@@ -1,5 +1,6 @@
 from lexer import lexer
-from parser_tokens import parse, variable_parse, variable_print, Var
+from parser_tokens import parse; ''',variable_parse, variable_print, Var'''
+from temp_parser import variable_parse, variable_print, Var
 from SemanticAnalyzer import semantic_analyzer
 from code_generator import generate_TAC_from_semantic
 from object_code_generator import object_parser , object_code_to_binary
@@ -737,13 +738,13 @@ parse_table = {
     }
 }
 
-print(parse(tokens, parse_table))
+#print(parse(tokens, parse_table))
 variables = variable_parse(tokens, parse_table)
 variable_print(variables)
 #---------------------------SEMANTICO------------------------------------
-print("\n SEMANTICO\n")
+#print("\n SEMANTICO\n")
 #TODO: change variable_parse to vars_list
-vars_list = [
+'''vars_list = [
     # Defines
     Var("VECTOR", "vi", "INT", "DEFINE", 1),
     Var("loop", "for(int x = 0; x < n; ++x)", "MACRO", "DEFINE", 2, "(x, n)"),
@@ -786,3 +787,4 @@ print("\nCODIGO BINARIO\n")
 
 print(binary)"""
 
+'''
