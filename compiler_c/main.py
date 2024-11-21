@@ -746,7 +746,7 @@ variable_print(variables)
 #TODO: change variable_parse to vars_list
 '''vars_list = [
     # Defines
-    Var("VECTOR", "vi", "INT", "DEFINE", 1),
+    Var("vi", "vector<int>", "INT", "DEFINE", 1),
     Var("loop", "for(int x = 0; x < n; ++x)", "MACRO", "DEFINE", 2, "(x, n)"),
     Var("macro", "(x < 10)", "MACRO", "DEFINE", 3, "(x)"),
     Var("macro3", "(x * 10)", "MACRO", "DEFINE", 4, "(x)"),
