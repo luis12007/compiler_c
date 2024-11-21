@@ -140,6 +140,14 @@ def variable_parse(tokens, parse_table):
                     if(in_define and top != "#define"):
                         if(definevalue[-1] != "<" and (top == "int" or top == "float" or top == "char")):
                             definevalue += " " + current_token.valor + " "
+                        elif(top == "="):
+                            if(definevalue[-1] == "<"):
+                                definevalue += current_token.valor + " "
+                            elif(definevalue[-1] == " " and definevalue[-2] == ">"):
+                                definevalue[-1] = current_token.valor
+                                definevalue += " "
+                            else:
+                                definevalue += " " + current_token.valor + " "
                         else:
                             definevalue += current_token.valor
                         if(current_token.valor == ")" or current_token.valor == ">" or current_token.valor == ","):
@@ -277,9 +285,14 @@ def variable_parse(tokens, parse_table):
                         definevalue += current_token.valor + " "
                     else:
                         definevalue += " " + current_token.valor + " "
-                        
                 elif(top == "="):
-                    definevalue += " " + current_token.valor + " "
+                    if(definevalue[-1] == "<"):
+                        definevalue += current_token.valor + " "
+                    elif(definevalue[-1] == " " and definevalue[-2] == ">"):
+                        definevalue[-1] = current_token.valor
+                        definevalue += " "
+                    else:
+                        definevalue += " " + current_token.valor + " "
                 else:
                     definevalue += current_token.valor
                 if(top == ")" or top == ">" or top == "," or top == ";"):
