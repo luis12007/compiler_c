@@ -738,11 +738,14 @@ parse_table = {
     }
 }
 
-#print(parse(tokens, parse_table))
+print(parse(tokens, parse_table))
 variables = variable_parse(tokens, parse_table)
 variable_print(variables)
 #---------------------------SEMANTICO------------------------------------
-#print("\n SEMANTICO\n")
+print("\n SEMANTICO\n")
+#llamando al analizador semantico
+vars = semantic_analyzer(variables)  
+print(vars[0])
 #TODO: change variable_parse to vars_list
 '''vars_list = [
     # Defines
@@ -769,9 +772,6 @@ variable_print(variables)
     Var("main", "null", "void", "Global", 20),
 ]
 
-#llamando al analizador semantico
-vars = semantic_analyzer(vars_list)  
-print(vars[0])
 #------------------------CODIGO INTERMEDIO-------------------------------
 print("\nCODIGO INTERMEDIO\n")
 tac = generate_TAC_from_semantic(vars[0])

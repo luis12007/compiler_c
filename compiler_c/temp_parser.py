@@ -469,11 +469,8 @@ def variable_parse(tokens, parse_table):
             continue
     return variables
 
-
-
 def variable_print(variables):
     # Crear una tabla para los símbolos
-    print(variables)
     table = PrettyTable()
     table.field_names = ["Name", "Value", "Type", "Scope", "Line" , "params"]
 
