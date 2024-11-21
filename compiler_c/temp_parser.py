@@ -69,6 +69,10 @@ def variable_parse(tokens, parse_table):
     define_line = -1
     in_define = False
     definevalue = ""
+    function = False
+    functionid = ""
+    functionline = -1
+    functiontype = ""
     #Everything else
     stack = ['$']
     stack.append('SOURCE')
@@ -104,6 +108,9 @@ def variable_parse(tokens, parse_table):
             if matched:
                 if(in_define):
                     definevalue += current_token.valor
+                elif(function):
+                    functionid = current_token.valor
+                    functionline = current_token.linea
                 elif(variable_declaration and not value_flag):
                     variable_name = current_token.valor
                     variable_line = current_token.linea
@@ -115,17 +122,23 @@ def variable_parse(tokens, parse_table):
                     token_key = current_token.valor if current_token.valor in parse_table[top] else current_token.tipo
                     if token_key in parse_table[top]:
                         rule = parse_table[top][token_key]
-                        
                         #Declaration setting
                         if(top == "INITSTATEMENT" or top == "FUNCINIT"):
                             variable_declaration = True
                         #Scope checking
                         if(top == "FUNCINIT"):
                             current_scope.append("Function Initialization")
+                            variable_param = "("
                         elif(top == "FUNCDEC"):
                             current_scope.append("Function Declaration")
-                        elif(top == "FUNCTION" or top == "VOID_FUNCTION" or top == "MAINFUNCTION"):
+                        elif(top == "FUNCTION" or top == "VOID_FUNCTION"):
                             current_scope.append("Function Body")
+                            function = True
+                        elif(top == "MAINFUNCTION"):
+                            current_scope.append("Function Body")
+                            functionid = "main"
+                            functionline = current_token.linea
+                            function = True
                         elif(top == "FORVAR"):
                             current_scope.append("For Loop")
                         elif(top == "IF" or top == "ELSEIF"):
@@ -166,19 +179,47 @@ def variable_parse(tokens, parse_table):
                     #Type checking
                     match top :
                         case "int":
-                            variable_type = "int"
+                            if(function):
+                                functiontype = "int"
+                                function = False
+                            elif(variable_declaration):
+                                variable_type = "int"
                         case "float":
-                            variable_type = "float"
+                            if(function):
+                                functiontype = "float"
+                                function = False
+                            elif(variable_declaration):
+                                variable_type = "float"
                         case "char":
-                            variable_type = "char"
+                            if(function):
+                                functiontype = "char"
+                                function = False
+                            elif(variable_declaration):
+                                variable_type = "char"
                         case "string":
-                            variable_type = "string"
+                            if(function):
+                                functiontype = "string"
+                                function = False
+                            elif(variable_declaration):
+                                variable_type = "string"
                         case "double":
-                            variable_type = "double"
+                            if(function):
+                                functiontype = "double"
+                                function = False
+                            elif(variable_declaration):
+                                variable_type = "double"
                         case "long":
-                            variable_type = "long"
+                            if(function):
+                                functiontype = "long"
+                                function = False
+                            elif(variable_declaration):
+                                variable_type = "long"
                         case "short":
-                            variable_type = "short"
+                            if(function):
+                                functiontype = "short"
+                                function = False
+                            elif(variable_declaration):
+                                variable_type = "short"
                             
                     # Variable saving
                     if(current_scope[-1] == "Global" and variable_declaration and current_token.valor == ";"):
@@ -190,14 +231,16 @@ def variable_parse(tokens, parse_table):
                         variable_value = ""
                         variable_line = ""
                     elif(current_scope[-1] == "Function Initialization" and variable_declaration and current_token.valor == ")"):
-                        variable_param += ')'
-                        variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
+                        variable_param += variable_name + ")"
+                        if(variable_name != ""):
+                            variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
+                            variable_name = ""
+                            variable_type = ""
+                            variable_value = ""
+                            variable_line = ""
                         variable_declaration = False
-                        variable_name = ""
-                        variable_type = ""
                         value_flag = False
-                        variable_value = ""
-                        variable_line = ""
+                        variables.append(Var(functionid, "None", functiontype, "Function", functionline, variable_param))
                         variable_param = ""
                         current_scope.pop()
                     elif(current_scope[-1] == "Function Body" and variable_declaration and current_token.valor == ";"):
@@ -234,6 +277,8 @@ def variable_parse(tokens, parse_table):
                         variable_line = ""
                     #Saving without end of init statements
                     elif(variable_declaration and current_token.valor == "," and (current_scope[-1] != "")):
+                        if(current_scope[-1] == "Function Initialization"):
+                            variable_param += variable_name + ", "
                         variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
                         variable_name = ""
                         value_flag = False
@@ -254,10 +299,17 @@ def variable_parse(tokens, parse_table):
                 #Scope checking
                 if(top == "FUNCINIT"):
                     current_scope.append("Function Initialization")
+                    variable_param = "("
                 elif(top == "FUNCDEC"):
                     current_scope.append("Function Declaration")
-                elif(top == "FUNCTION" or top == "VOID_FUNCTION" or top == "MAINFUNCTION"):
+                elif(top == "FUNCTION" or top == "VOID_FUNCTION"):
+                    function = True
                     current_scope.append("Function Body")
+                elif(top == "MAINFUNCTION"):
+                    current_scope.append("Function Body")
+                    functionid = "main"
+                    functionline = current_token.linea
+                    function = True
                 elif(top == "FORVAR"):
                     current_scope.append("For Loop")
                 elif(top == "IF" or top == "ELSEIF"):
@@ -302,19 +354,50 @@ def variable_parse(tokens, parse_table):
             #Type checking
             match top :
                 case "int":
-                    variable_type = "int"
+                    if(function):
+                        functiontype = "int"
+                        function = False
+                    elif(variable_declaration):
+                        variable_type = "int"
                 case "float":
-                    variable_type = "float"
+                    if(function):
+                        functiontype = "float"
+                        function = False
+                    elif(variable_declaration):
+                        variable_type = "float"
                 case "char":
-                    variable_type = "char"
+                    if(function):
+                        functiontype = "char"
+                        function = False
+                    elif(variable_declaration):
+                        variable_type = "char"
                 case "string":
-                    variable_type = "string"
+                    if(function):
+                        functiontype = "string"
+                        function = False
+                    elif(variable_declaration):
+                        variable_type = "string"
                 case "double":
-                    variable_type = "double"
+                    if(function):
+                        functiontype = "double"
+                        function = False
+                    elif(variable_declaration):
+                        variable_type = "double"
                 case "long":
-                    variable_type = "long"
+                    if(function):
+                        functiontype = "long"
+                        function = False
+                    elif(variable_declaration):
+                        variable_type = "long"
                 case "short":
-                    variable_type = "short"
+                    if(function):
+                        functiontype = "short"
+                        function = False
+                    elif(variable_declaration):
+                        variable_type = "short"
+                case "void":
+                    functiontype = "void"
+                    function = False
                             
             # Variable saving
             if(current_scope[-1] == "Global" and variable_declaration and current_token.valor == ";"):
@@ -326,14 +409,16 @@ def variable_parse(tokens, parse_table):
                 variable_value = ""
                 variable_line = ""
             elif(current_scope[-1] == "Function Initialization" and variable_declaration and current_token.valor == ")"):
-                variable_param += ')'
-                variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
+                variable_param += variable_name + ")"
+                if(variable_name != ""):
+                    variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
+                    variable_name = ""
+                    variable_type = ""
+                    variable_value = ""
+                    variable_line = ""
                 variable_declaration = False
-                variable_name = ""
-                variable_type = ""
                 value_flag = False
-                variable_value = ""
-                variable_line = ""
+                variables.append(Var(functionid, "None", functiontype, "Function", functionline, variable_param))
                 variable_param = ""
                 current_scope.pop()
             elif(current_scope[-1] == "Function Body" and variable_declaration and current_token.valor == ";"):
@@ -370,6 +455,8 @@ def variable_parse(tokens, parse_table):
                 variable_line = ""
             #Saving without end of init statements
             elif(variable_declaration and current_token.valor == "," and (current_scope[-1] != "")):
+                if(current_scope[-1] == "Function Initialization"):
+                    variable_param += variable_name + ", "
                 variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
                 variable_name = ""
                 value_flag = False
