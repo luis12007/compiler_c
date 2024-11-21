@@ -50,7 +50,10 @@ def define_parse(value, line):
     if("(" in define_name):
         define_params = "(" + define_name.split("(", 1)[1]
         define_name = define_name.split("(", 1)[0]
-    return Var(define_name, define_body, "", "Define Statement", line, define_params)
+    if(define_params == ""):
+        return Var(define_name, define_body, "", "Define Statement", line)
+    else:
+        return Var(define_name, define_body, "", "Define Statement", line, define_params)
 
 def variable_parse(tokens, parse_table):
     #Variable Things
@@ -179,7 +182,7 @@ def variable_parse(tokens, parse_table):
                             
                     # Variable saving
                     if(current_scope[-1] == "Global" and variable_declaration and current_token.valor == ";"):
-                        variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line, variable_param))
+                        variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
                         variable_declaration = False
                         variable_name = ""
                         variable_type = ""
@@ -188,7 +191,7 @@ def variable_parse(tokens, parse_table):
                         variable_line = ""
                     elif(current_scope[-1] == "Function Initialization" and variable_declaration and current_token.valor == ")"):
                         variable_param += ')'
-                        variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line, variable_param))
+                        variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
                         variable_declaration = False
                         variable_name = ""
                         variable_type = ""
@@ -198,7 +201,7 @@ def variable_parse(tokens, parse_table):
                         variable_param = ""
                         current_scope.pop()
                     elif(current_scope[-1] == "Function Body" and variable_declaration and current_token.valor == ";"):
-                        variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line, variable_param))
+                        variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
                         variable_declaration = False
                         variable_name = ""
                         variable_type = ""
@@ -206,7 +209,7 @@ def variable_parse(tokens, parse_table):
                         variable_value = ""
                         variable_line = ""
                     elif(current_scope[-1] == "For Loop" and variable_declaration and current_token.valor == ";"):
-                        variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line, variable_param))
+                        variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
                         variable_declaration = False
                         variable_name = ""
                         variable_type = ""
@@ -214,7 +217,7 @@ def variable_parse(tokens, parse_table):
                         variable_value = ""
                         variable_line = ""
                     elif(current_scope[-1] == "If Statement" and variable_declaration and current_token.valor == ";"):
-                        variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line, variable_param))
+                        variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
                         variable_declaration = False
                         variable_name = ""
                         variable_type = ""
@@ -222,23 +225,13 @@ def variable_parse(tokens, parse_table):
                         variable_value = ""
                         variable_line = ""
                     elif(current_scope[-1] == "Switch Statement" and variable_declaration and current_token.valor == ";"):
-                        variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line, variable_param))
+                        variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
                         variable_declaration = False
                         variable_name = ""
                         variable_type = ""
                         value_flag = False
                         variable_value = ""
                         variable_line = ""
-                    elif(variable_declaration and in_define and current_token.valor == ")"):
-                        variable_param += ')'
-                        variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line, variable_param))
-                        variable_declaration = False
-                        variable_name = ""
-                        variable_type = ""
-                        value_flag = False
-                        variable_value = ""
-                        variable_line = ""
-                        variable_param = ""
                     #Saving without end of init statements
                     elif(variable_declaration and current_token.valor == "," and (current_scope[-1] != "")):
                         variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
@@ -325,7 +318,7 @@ def variable_parse(tokens, parse_table):
                             
             # Variable saving
             if(current_scope[-1] == "Global" and variable_declaration and current_token.valor == ";"):
-                variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line, variable_param))
+                variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
                 variable_declaration = False
                 variable_name = ""
                 variable_type = ""
@@ -334,7 +327,7 @@ def variable_parse(tokens, parse_table):
                 variable_line = ""
             elif(current_scope[-1] == "Function Initialization" and variable_declaration and current_token.valor == ")"):
                 variable_param += ')'
-                variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line, variable_param))
+                variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
                 variable_declaration = False
                 variable_name = ""
                 variable_type = ""
@@ -344,7 +337,7 @@ def variable_parse(tokens, parse_table):
                 variable_param = ""
                 current_scope.pop()
             elif(current_scope[-1] == "Function Body" and variable_declaration and current_token.valor == ";"):
-                variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line, variable_param))
+                variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
                 variable_declaration = False
                 variable_name = ""
                 variable_type = ""
@@ -352,7 +345,7 @@ def variable_parse(tokens, parse_table):
                 variable_value = ""
                 variable_line = ""
             elif(current_scope[-1] == "For Loop" and variable_declaration and current_token.valor == ";"):
-                variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line, variable_param))
+                variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
                 variable_declaration = False
                 variable_name = ""
                 variable_type = ""
@@ -360,7 +353,7 @@ def variable_parse(tokens, parse_table):
                 variable_value = ""
                 variable_line = ""
             elif(current_scope[-1] == "If Statement" and variable_declaration and current_token.valor == ";"):
-                variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line, variable_param))
+                variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
                 variable_declaration = False
                 variable_name = ""
                 variable_type = ""
@@ -368,23 +361,13 @@ def variable_parse(tokens, parse_table):
                 variable_value = ""
                 variable_line = ""
             elif(current_scope[-1] == "Switch Statement" and variable_declaration and current_token.valor == ";"):
-                variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line, variable_param))
+                variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
                 variable_declaration = False
                 variable_name = ""
                 variable_type = ""
                 value_flag = False
                 variable_value = ""
                 variable_line = ""
-            elif(variable_declaration and in_define and current_token.valor == ")"):
-                variable_param += ')'
-                variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line, variable_param))
-                variable_declaration = False
-                variable_name = ""
-                variable_type = ""
-                value_flag = False
-                variable_value = ""
-                variable_line = ""
-                variable_param = ""
             #Saving without end of init statements
             elif(variable_declaration and current_token.valor == "," and (current_scope[-1] != "")):
                 variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
