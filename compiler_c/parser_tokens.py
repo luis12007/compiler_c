@@ -40,6 +40,7 @@ def display_syntax_tree(stack, token, result, transition):
             print("    |")
 
 def parse(tokens, parse_table):
+    errr_stack = []
     stack = ['$']
     stack.append('SOURCE')  # Start with the grammar's starting symbol
 
@@ -57,9 +58,13 @@ def parse(tokens, parse_table):
     print(f"Tokens: {tokens}\n")
 
     while stack:
+        print(f"Index: {index}\n")
         top = stack.pop()
-        current_token = tokens[index]
+        print(f"tOP: {top}\n")
 
+        current_token = tokens[index]
+        print(f"current_token: {current_token}\n")
+        print(f"Index: {index}\n")
         result = ""
         transition = f"{top} -> ɛ"  # Default transition for empty rules
 
@@ -70,6 +75,7 @@ def parse(tokens, parse_table):
                 if compiled_regex.fullmatch(current_token.valor):
                     result = f"Regex match: {current_token.valor}"
                     matched = True
+                    print(f"Caso 1\n")
                     index += 1  # Move to the next token
                     break
             if matched:
@@ -79,75 +85,197 @@ def parse(tokens, parse_table):
                 if top in parse_table:
                     token_key = current_token.valor if current_token.valor in parse_table[top] else current_token.tipo
                     if token_key in parse_table[top]:
+                        print(f"Caso 2\n")
                         rule = parse_table[top][token_key]
                         result = f"Rule found: {top} -> {rule}"
                         transition = f"{top} -> {rule}"
                         if rule != ['ɛ']:
                             stack.extend(reversed(rule))
                     else:
-                        handle_error(f"No rule for '{top}' with current token '{current_token.valor}'", stack, index, tokens)
-                        continue
+                        handle_error_non_terminal(top, current_token, index, tokens)
+                        errr_stack.append(f"El error actual fue {top} y el token fue {current_token}")
+                        #continue
                     display_syntax_tree(stack + [top], current_token, result, transition)
                     continue
                 elif top == current_token.valor:
+                    print(f"Caso 3\n")
                     result = f"Terminal match: {top} == {current_token.valor}"
                     transition = f"{top} -> terminal"
                     index += 1  # Move to the next token
                     display_syntax_tree(stack + [top], current_token, result, transition)
                     continue
                 else:
-                    handle_error(f"No matching regex rule for '{top}' with token '{current_token.valor}'", stack, index, tokens)
+                    tokens, errr_iteration = handle_error_terminal(top, current_token,  index, tokens)
+                    errr_stack.append(errr_iteration)
+                    stack.append(top)
+                    
                     continue
 
         # Non-regex non-terminal handling
         elif top in parse_table:
             token_key = current_token.valor if current_token.valor in parse_table[top] else current_token.tipo
+            print(f"token_key: {token_key}\n")
 
             if token_key in parse_table[top]:
+                print(f"Caso 4\n")
                 rule = parse_table[top][token_key]
                 result = f"Rule found: {top} -> {rule}"
                 transition = f"{top} -> {rule}"
                 if rule != ['ɛ']:
                     stack.extend(reversed(rule))
             else:
-                handle_error(f"No rule for '{top}' with current token '{current_token.valor}'", stack, index, tokens)
+                handle_error_non_terminal(top, current_token,  index, tokens)
                 continue
             display_syntax_tree(stack + [top], current_token, result, transition)
-
+        #Terminal handling
         elif top == current_token.valor:
             result = f"Terminal match: {top} == {current_token.valor}"
+            print(f"Caso 5\n")
             transition = f"{top} -> terminal"
             index += 1  # Move to the next token
             display_syntax_tree(stack + [top], current_token, result, transition)
             continue
 
         else:
-            handle_error(f"Expected '{top}', but got '{current_token.valor}'", stack, index, tokens)
+            tokens, errr_iteration = handle_error_terminal(top, current_token,  index, tokens)
+            errr_stack.append(errr_iteration)
+            stack.append(top)
+            
+            continue
+        
+
 
     if index == len(tokens) and not stack:
         print(len(tokens), index, stack)
+        print(errr_stack)
         print("\nParsing completed successfully: Syntax correct.")
         return "yes"
     else:
         print(len(tokens), index, stack)
         
         print("\nParsing ended with issues: Stack or token list not empty.")
+        print(errr_stack)
         return "no"
 """-----------------------ERROR HANDLER--------------------"""
 
 # New function: Error handler
-def handle_error(message, stack, index, tokens):
-    
-    print(f"\nError: {message}")
-    print("Skipping token to attempt recovery...")
-    
-    # Skip the current token
-    if index < len(tokens) - 1:  # Ensure we don't exceed the token list
-        index += 1
-    else:
-        print("Reached end of input during recovery.")
+def handle_error_non_terminal(stack_top, current_tkn, index, tokens):
+    print("Ha ocurrido un error")
 
-    return index
+
+def handle_error_terminal(stack_top, current_tkn, index, tokens):
+    tokens_esperados = {    
+        'if': 'Condicional If',
+        'else': 'Condicional Else',
+        'for': 'Bucle For',
+        'while': 'Bucle While',
+        'do': 'Bucle Do-While',
+        'return': 'Declaracion Return',
+        'int': 'Tipo de dato int',
+        'float': 'Tipo de dato float',
+        'double': 'Tipo de dato double',
+        'long': 'Tipo de dato long',
+        'short': 'Tipo de dato short',
+        'void': 'Tipo de retorno void',
+        'char': 'Tipo de dato char',
+        'string': 'Tipo de dato string',
+        'struct': 'Declaracion de Estructura',
+        'union': 'Declaracion de Union',
+        'enum': 'Declaracion de Enum',
+        'typedef': 'Definicion de tipo',
+        'switch': 'SWITCH',
+        'case': 'SWITCHCASE',
+        'break': 'Salida de bucle',
+        'continue': 'Continuacion de bucle',
+        'default': 'Caso por defecto en Switch',
+        'goto': 'Salto de linea Goto',
+        'static': 'Modificador Static',
+        'extern': 'Modificador Extern',
+        'auto': 'Modificador Auto',
+        'register': 'Modificador Register',
+        'sizeof': 'Operador Sizeof',
+        'malloc': 'Funcion de Asignacion de Memoria',
+        'free': 'Liberacion de Memoria',
+        'const': 'Declaracion Constante',
+        'volatile': 'Modificador Volatile',
+        'inline': 'Modificador Inline',
+        'scanf': 'Funcion de Lectura',
+        'printf': 'Funcion de Escritura',
+        'strlen': 'Funcion de Longitud de Cadena',
+        'strcpy': 'Funcion de Copia de Cadena',
+        '#include': 'Directiva de Inclusion',
+        '#define': 'Definición de Macro',
+        'main': 'Identificador de Funcion Main',
+        '=': 'Igual',
+        '+': 'suma',
+        '-': 'resta',
+        '*': 'Multiplicacion',
+        '/': 'Division',
+        '%': 'Modulo',
+        '>': 'Mayor que',
+        '<': 'Menor que',
+        '&': 'Ampersand',
+        '|': 'Pipe',
+        '!': 'Negacion',
+        '^': 'Potencia',
+        '~': 'Complemento',
+        '.': 'Punto',
+        ';': 'Punto y coma',
+        ',': 'Coma',
+        ':': 'Dos puntos',
+        '<': 'Menor que',
+        '>': 'Mayor que',
+        '(': 'Inicio de paréntesis',
+        '{': 'Inicio de llave',
+        '[': 'Inicio de corchete',
+        ')': 'Fin de paréntesis',
+        '}': 'Fin de llave',
+        ']': 'Fin de corchete',
+    }
+    #asegurarse que hay next token
+    next_token = tokens[index + 1]
+    if(next_token.valor == stack_top):
+        error_msg = f"There is a token not expected in the line {current_tkn.linea}"
+        print(error_msg)
+
+        del tokens[index]
+        return tokens, error_msg
+
+        
+
+    
+    else: 
+        if stack_top in tokens_esperados:
+            token_recovery = (Token(stack_top, stack_top, current_tkn.linea))
+            tokens.insert(index, token_recovery)
+            error_msg = f"Expected token of type {stack_top} in the line {current_tkn.linea}, {current_tkn.valor}, case 1"
+            print(error_msg)
+            return tokens, error_msg
+        elif stack_top == 'VARNAME':
+            token_recovery = (Token(stack_top, 'tknvrnm' + stack_top + str(index) +str(current_tkn.linea), current_tkn.linea))
+            tokens.insert(index, token_recovery)
+            error_msg = f"Expected token of type {stack_top} in the line {current_tkn.linea}, {current_tkn.valor}"
+            print(error_msg)
+            return tokens, error_msg
+        elif stack_top == 'INTVAL':
+            token_recovery = (Token(stack_top, 0, current_tkn.linea))
+            tokens.insert(index, token_recovery)
+            print( error_msg )
+            return tokens, error_msg
+        else : 
+            error_msg = f"Unexpected error in the line {current_tkn.linea}"
+            return tokens, error_msg
+        
+        
+
+            # Este apartado es para variables, por ende necesito verificar como maneja las variables el código.
+           
+
+
+
+    
+    
+
 
 
 
