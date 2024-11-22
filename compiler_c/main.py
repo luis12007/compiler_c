@@ -513,44 +513,44 @@ parse_table = {
     },
     
     # INTLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT updated
-   "INTLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT": {
-    "=": ["=", "EXPRESSION_INT", ";"],  # Expression must end with semicolon
-    ",": ["INTLIST"],  # Handle multiple variable declarations
-    ";": [";"],  # End declaration without assignment
-    "ɛ": []
-},
-    
+    "INTLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT": {
+        "=": ["=", "EXPRESSION_INT", ";"],  # Expression must end with semicolon
+        ",": ["INTLIST"],  # Handle multiple variable declarations
+        ";": [";"],  # End declaration without assignment
+        "ɛ": []
+    },
+
     # EXPRESSION added (New Rule)
     "EXPRESSION_INT": {
-    "VARNAME": ["TERM_INT", "EXPRESSION_TAIL"],  # Start with a variable
-    "[0-9][0-9]*": ["TERM_INT", "EXPRESSION_TAIL"],  # Start with a number
-    "(": ["(", "EXPRESSION_INT", ")", "EXPRESSION_TAIL"]  # Grouped expression
-},
+        "VARNAME": ["TERM_INT", "EXPRESSION_TAIL"],  # Start with a variable
+        "[0-9][0-9]*": ["TERM_INT", "EXPRESSION_TAIL"],  # Start with a number
+        "(": ["(", "EXPRESSION_INT", ")", "EXPRESSION_TAIL"]  # Grouped expression
+    },
 
-"TERM_INT": {
-    "VARNAME": ["VARNAME"],  # Variable (e.g., result)
-    "[0-9][0-9]*": ["[0-9][0-9]*"]  # Constant (e.g., 1, 42)
-},
-    
-"EXPRESSION_TAIL": {
-    "+": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"],  # Handle + operator and continue
-    "-": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"],  # Handle - operator and continue
-    "*": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"],  # Handle * operator and continue
-    "/": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"],  # Handle / operator and continue
-    "^": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"],  # Handle ^ operator and continue
-    ";": ["ɛ"],  # End of the assignment
-    "ɛ": ["ɛ"]  # Default end
-},
+    "TERM_INT": {
+        "VARNAME": ["VARNAME"],  # Variable (e.g., result)
+        "[0-9][0-9]*": ["[0-9][0-9]*"]  # Constant (e.g., 1, 42)
+    },
 
-    
-    # OPERATOR added (New Rule)
-    "OPERATOR": {
-    "+": ["+"],
-    "-": ["-"],
-    "*": ["*"],
-    "/": ["/"],
-    "^": ["^"]  # Add power operator
-},
+    "EXPRESSION_TAIL": {
+        "+": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"],  # Handle + operator and continue
+        "-": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"],  # Handle - operator and continue
+        "*": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"],  # Handle * operator and continue
+        "/": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"],  # Handle / operator and continue
+        "^": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"],  # Handle ^ operator and continue
+        ";": ["ɛ"],  # End of the assignment
+        "ɛ": ["ɛ"]  # Default end
+    },
+
+
+        # OPERATOR added (New Rule)
+        "OPERATOR": {
+        "+": ["+"],
+        "-": ["-"],
+        "*": ["*"],
+        "/": ["/"],
+        "^": ["^"]  # Add power operator
+    },
     
     
         # FLOATLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT
