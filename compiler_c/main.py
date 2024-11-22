@@ -512,6 +512,7 @@ parse_table = {
         ";": ["ɛ"]
     },
     
+    #-----------VARDESVERGUE-----------#
     # INTLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT updated
     "INTLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT": {
         "=": ["=", "EXPRESSION_INT", ";"],  # Expression must end with semicolon
@@ -522,36 +523,34 @@ parse_table = {
 
     # EXPRESSION added (New Rule)
     "EXPRESSION_INT": {
-        "VARNAME": ["TERM_INT", "EXPRESSION_TAIL"],  # Start with a variable
-        "[0-9][0-9]*": ["TERM_INT", "EXPRESSION_TAIL"],  # Start with a number
-        "(": ["(", "EXPRESSION_INT", ")", "EXPRESSION_TAIL"]  # Grouped expression
+        "VARNAME": ["TERM_INT", "EXPRESSION_TAIL"], 
+        "[0-9][0-9]*": ["TERM_INT", "EXPRESSION_TAIL"], 
+        "(": ["(", "EXPRESSION_INT", ")", "EXPRESSION_TAIL"]
     },
 
     "TERM_INT": {
-        "VARNAME": ["VARNAME"],  # Variable (e.g., result)
-        "[0-9][0-9]*": ["[0-9][0-9]*"]  # Constant (e.g., 1, 42)
+        "VARNAME": ["VARNAME"],
+        "[0-9][0-9]*": ["[0-9][0-9]*"] 
     },
 
     "EXPRESSION_TAIL": {
-        "+": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"],  # Handle + operator and continue
-        "-": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"],  # Handle - operator and continue
-        "*": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"],  # Handle * operator and continue
-        "/": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"],  # Handle / operator and continue
-        "^": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"],  # Handle ^ operator and continue
-        ";": ["ɛ"],  # End of the assignment
-        "ɛ": ["ɛ"]  # Default end
+        "+": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"],
+        "-": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"],
+        "*": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"],
+        "/": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"],
+        "^": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"],
+        ";": ["ɛ"],  
+        "ɛ": ["ɛ"]  
     },
 
-
-        # OPERATOR added (New Rule)
         "OPERATOR": {
         "+": ["+"],
         "-": ["-"],
         "*": ["*"],
         "/": ["/"],
-        "^": ["^"]  # Add power operator
+        "^": ["^"]  
     },
-    
+    #-----------VARDESVERGUE-----------#
     
         # FLOATLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT
         "FLOATLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT": {  # Assign or leave uninitialized
@@ -773,16 +772,17 @@ parse_table = {
     }
 }
 
-print(parse(tokens, parse_table))
+result = parse(tokens, parse_table)
+print(result[0])
+
+
 variables = variable_parse(tokens, parse_table)
 variable_print(variables)
 #---------------------------SEMANTICO------------------------------------
 print("\n SEMANTICO\n")
 #llamando al analizador semantico
-vars = semantic_analyzer(variables)  
-print(vars[0])
-#TODO: change variable_parse to vars_list
-'''vars_list = [
+
+vars_list = [
     # Defines
     Var("vi", "vector<int>", "INT", "DEFINE", 1),
     Var("loop", "for(int x = 0; x < n; ++x)", "MACRO", "DEFINE", 2, "(x, n)"),
@@ -796,7 +796,6 @@ print(vars[0])
     Var("a", "'a'", "char", "Function scope: factorial", 10),
     Var("i", "1", "int", "For Loop", 12),
     Var("b", "'b'", "char", "If Statement", 14),
-    Var("return", "2", "int", "Function scope: factorial", 15),
 
     # Variables in main function
     Var("x", "5", "int", "main scope", 1),
@@ -806,6 +805,11 @@ print(vars[0])
     Var("factorial", "null", "int", "Global", 8),
     Var("main", "null", "void", "Global", 20),
 ]
+
+
+""" 
+semantic_analyzer()   """
+#TODO: change variable_parse to vars_list
 
 """#------------------------CODIGO INTERMEDIO-------------------------------
 print("\nCODIGO INTERMEDIO\n")
@@ -822,4 +826,3 @@ print("\nCODIGO BINARIO\n")
 
 print(binary)"""
 
-'''

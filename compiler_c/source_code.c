@@ -14,7 +14,7 @@ int factorial(int n) {
     int result = 1;
     float result2 = 20.2, result3 = 3.3f;
     char a = 'a';
-    int eq = 2/2;
+    /*TODO: int eq = 2/2(z^2);  */
 
 
 
