@@ -85,8 +85,8 @@ def parse(tokens, parse_table):
                         if rule != ['ɛ']:
                             stack.extend(reversed(rule))
                     else:
-                        result = f"Error: No rule for '{top}' with current token '{current_token.valor}'"
-                        raise SyntaxError(result)
+                        handle_error(f"No rule for '{top}' with current token '{current_token.valor}'", stack, index, tokens)
+                        continue
                     display_syntax_tree(stack + [top], current_token, result, transition)
                     continue
                 elif top == current_token.valor:
@@ -96,8 +96,8 @@ def parse(tokens, parse_table):
                     display_syntax_tree(stack + [top], current_token, result, transition)
                     continue
                 else:
-                    result = f"Error: No matching regex rule for '{top}' with token '{current_token.valor}'"
-                    raise SyntaxError(result)
+                    handle_error(f"No matching regex rule for '{top}' with token '{current_token.valor}'", stack, index, tokens)
+                    continue
 
         # Non-regex non-terminal handling
         elif top in parse_table:
@@ -110,8 +110,8 @@ def parse(tokens, parse_table):
                 if rule != ['ɛ']:
                     stack.extend(reversed(rule))
             else:
-                result = f"Error: No rule for '{top}' with current token '{current_token.valor}'"
-                raise SyntaxError(result)
+                handle_error(f"No rule for '{top}' with current token '{current_token.valor}'", stack, index, tokens)
+                continue
             display_syntax_tree(stack + [top], current_token, result, transition)
 
         elif top == current_token.valor:
@@ -122,15 +122,34 @@ def parse(tokens, parse_table):
             continue
 
         else:
-            result = f"Error: Expected '{top}', but got '{current_token.valor}'"
-            raise SyntaxError(result)
+            handle_error(f"Expected '{top}', but got '{current_token.valor}'", stack, index, tokens)
 
     if index == len(tokens) and not stack:
+        print(len(tokens), index, stack)
         print("\nParsing completed successfully: Syntax correct.")
         return "yes"
     else:
+        print(len(tokens), index, stack)
+        
         print("\nParsing ended with issues: Stack or token list not empty.")
         return "no"
+"""-----------------------ERROR HANDLER--------------------"""
+
+# New function: Error handler
+def handle_error(message, stack, index, tokens):
+    
+    print(f"\nError: {message}")
+    print("Skipping token to attempt recovery...")
+    
+    # Skip the current token
+    if index < len(tokens) - 1:  # Ensure we don't exceed the token list
+        index += 1
+    else:
+        print("Reached end of input during recovery.")
+
+    return index
+
+
 
 
 """---------------------------VARIABLES--------------------"""
@@ -442,8 +461,6 @@ def variable_parse(tokens, parse_table):
                 f"Unexpected token '{current_token.valor}' (type '{current_token.tipo}') at line {current_token.linea}"
             )
     return variables
-
-
 
 def variable_print(variables):
     # Crear una tabla para los símbolos

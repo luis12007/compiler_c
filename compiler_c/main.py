@@ -772,7 +772,7 @@ print(vars[0])
     Var("main", "null", "void", "Global", 20),
 ]
 
-#------------------------CODIGO INTERMEDIO-------------------------------
+"""#------------------------CODIGO INTERMEDIO-------------------------------
 print("\nCODIGO INTERMEDIO\n")
 tac = generate_TAC_from_semantic(vars[0])
 print(tac)
@@ -785,6 +785,6 @@ binary = object_code_to_binary(object_code)
 
 print("\nCODIGO BINARIO\n")
 
-print(binary)
+print(binary)"""
 
 '''
