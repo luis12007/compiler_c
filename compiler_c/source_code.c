@@ -33,5 +33,6 @@ int factorial(int n) {
 
 /* MAIN FUNCTION */
 void main() {
+    factorial(1);
     return;
 }
