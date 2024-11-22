@@ -476,9 +476,9 @@ parse_table = {
     },
     
     # FLOATINIT updated
-    "FLOATINIT": {
-        "float": ["float", "VARNAME", "FLOATLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT"],
-        ";": ["ɛ"]
+    "FLOATINIT": {  # Entry point for `float` declarations
+    "float": ["float", "VARNAME", "FLOATLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT"],
+    ";": ["ɛ"]
     },
     
     # CHARINIT updated
@@ -492,6 +492,7 @@ parse_table = {
         "string": ["string", "VARNAME", "STRINGLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT"],
         ";": ["ɛ"]
     },
+    
     
     # DOUBLEINIT updated
     "DOUBLEINIT": {
@@ -511,17 +512,50 @@ parse_table = {
         ";": ["ɛ"]
     },
     
-    # INTLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT
-    "INTLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT": {
-        "=": ["=", "INTVAL", "INTLIST"],
-        ",": ["INTLIST"],
-        ")": ["ɛ"],
-        "ɛ": []
-    },
+    # INTLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT updated
+   "INTLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT": {
+    "=": ["=", "EXPRESSION_INT", ";"],  # Expression must end with semicolon
+    ",": ["INTLIST"],  # Handle multiple variable declarations
+    ";": [";"],  # End declaration without assignment
+    "ɛ": []
+},
     
-    # FLOATLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT
-    "FLOATLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT": {
-        "=": ["=", "FLOATVAL", "FLOATLIST"],
+    # EXPRESSION added (New Rule)
+    "EXPRESSION_INT": {
+    "VARNAME": ["TERM_INT", "EXPRESSION_TAIL"],  # Start with a variable
+    "[0-9][0-9]*": ["TERM_INT", "EXPRESSION_TAIL"],  # Start with a number
+    "(": ["(", "EXPRESSION_INT", ")", "EXPRESSION_TAIL"]  # Grouped expression
+},
+
+"TERM_INT": {
+    "VARNAME": ["VARNAME"],  # Variable (e.g., result)
+    "[0-9][0-9]*": ["[0-9][0-9]*"]  # Constant (e.g., 1, 42)
+},
+    
+"EXPRESSION_TAIL": {
+    "+": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"],  # Handle + operator and continue
+    "-": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"],  # Handle - operator and continue
+    "*": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"],  # Handle * operator and continue
+    "/": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"],  # Handle / operator and continue
+    "^": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"],  # Handle ^ operator and continue
+    ";": ["ɛ"],  # End of the assignment
+    "ɛ": ["ɛ"]  # Default end
+},
+
+    
+    # OPERATOR added (New Rule)
+    "OPERATOR": {
+    "+": ["+"],
+    "-": ["-"],
+    "*": ["*"],
+    "/": ["/"],
+    "^": ["^"]  # Add power operator
+},
+    
+    
+        # FLOATLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT
+        "FLOATLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT": {  # Assign or leave uninitialized
+        "=": ["=", "FLOATVAL", "FLOATLIST"],  # Allows floating-point values only
         ",": ["FLOATLIST"],
         ")": ["ɛ"],
         "ɛ": []
@@ -542,6 +576,7 @@ parse_table = {
         ")": ["ɛ"],
         "ɛ": []
     },
+    
     
     # DOUBLELIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT
     "DOUBLELIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT": {
