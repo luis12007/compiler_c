@@ -515,16 +515,15 @@ parse_table = {
     #-----------VARDESVERGUE-----------#
     # INTLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT updated
     "INTLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT": {
-        "=": ["=", "EXPRESSION_INT", ";"],  # Expression must end with semicolon
-        ",": ["INTLIST"],  # Handle multiple variable declarations
-        ";": [";"],  # End declaration without assignment
-        "ɛ": []
-    },
-
+    "=": ["=", "EXPRESSION_INT", "INTLIST"], 
+    ",": [",", "VARNAME", "INTLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT"],  
+    ";": [";"],  
+    "ɛ": []
+},
     # EXPRESSION added (New Rule)
     "EXPRESSION_INT": {
         "VARNAME": ["TERM_INT", "EXPRESSION_TAIL"], 
-        "[0-9][0-9]*": ["TERM_INT", "EXPRESSION_TAIL"], 
+        "INTVAL": ["TERM_INT", "EXPRESSION_TAIL"], 
         "(": ["(", "EXPRESSION_INT", ")", "EXPRESSION_TAIL"]
     },
 
@@ -553,12 +552,13 @@ parse_table = {
     #-----------VARDESVERGUE-----------#
     
         # FLOATLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT
-        "FLOATLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT": {  # Assign or leave uninitialized
-        "=": ["=", "FLOATVAL", "FLOATLIST"],  # Allows floating-point values only
+        "FLOATLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT": {  
+        "=": ["=", "FLOATVAL", "FLOATLIST"],  
         ",": ["FLOATLIST"],
         ")": ["ɛ"],
         "ɛ": []
     },
+    
     
     # CHARLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT
     "CHARLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT": {
@@ -773,7 +773,7 @@ parse_table = {
 }
 
 result = parse(tokens, parse_table)
-print(result[0])
+print(result)
 
 
 variables = variable_parse(tokens, parse_table)

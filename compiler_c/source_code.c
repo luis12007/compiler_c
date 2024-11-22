@@ -11,15 +11,15 @@
 int factorial(int n) {
 
     /* VARIABLES */
-    int result = 1;
+    int result = 1, result2 = 2;
     float result2 = 20.2, result3 = 3.3f;
     char a = 'a';
-    /*TODO: int eq = 2/2(z^2);  */
+    int eq = 2/2*x^2;
 
 
 
     /* ASINGNACION CON VARIABLES */
-    int sum = result + 1  + result3 + 2;
+    int sum = result / 1  + result3 + 2;
     /* float sum2 = result2 + result3 + 3; */
 
     /* FOR LOOP */

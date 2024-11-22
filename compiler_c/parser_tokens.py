@@ -123,10 +123,7 @@ def parse(tokens, parse_table):
 # New function: Error handler
 def handle_error(message, stack, index, tokens):
     
-    print(f"\nError: {message}")
-    print("Skipping token to attempt recovery...")
-    print("index")
-    print(tokens[index])
+
 
     return index
 
