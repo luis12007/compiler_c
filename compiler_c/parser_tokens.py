@@ -27,15 +27,11 @@ def parse(tokens, parse_table):
         for non_terminal in parse_table
     }
 
-    print("\nStarting Parsing Process:")
-    print(f"Initial Stack: {stack}\n")
-    print(f"Tokens: {tokens}\n")
 
     while stack:
         top = stack.pop()
         current_token = tokens[index]
-        print(stack)
-        print(tokens[index])
+
 
         result = ""
         transition = f"{top} -> ɛ"  # Default transition for empty rules
@@ -63,7 +59,6 @@ def parse(tokens, parse_table):
                             stack.extend(reversed(rule))
                         syntax_tree.append((top, rule, "Rule Applied"))  # Save rule to syntax tree
                     else:
-                        print(stack)
                         handle_error(f"No rule for '{top}' with current token '{current_token.valor}'", stack, index, tokens)
                         continue
                     continue
@@ -74,7 +69,6 @@ def parse(tokens, parse_table):
                     syntax_tree.append((top, current_token.valor, "Terminal Match"))  # Save to syntax tree
                     continue
                 else:
-                    print(stack)
                     handle_error(f"No matching regex rule for '{top}' with token '{current_token.valor}'", stack, index, tokens)
                     continue
 
@@ -90,7 +84,6 @@ def parse(tokens, parse_table):
                     stack.extend(reversed(rule))
                 syntax_tree.append((top, rule, "Rule Applied"))  # Save rule to syntax tree
             else:
-                print(stack)
                 handle_error(f"No rule for '{top}' with current token '{current_token.valor}'", stack, index, tokens)
                 continue
 
@@ -102,7 +95,6 @@ def parse(tokens, parse_table):
             continue
 
         else:
-            print(stack)
             handle_error(f"Expected '{top}', but got '{current_token.valor}'", stack, index, tokens)
 
     if index == len(tokens) and not stack:

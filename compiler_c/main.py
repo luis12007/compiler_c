@@ -1,9 +1,40 @@
 from lexer import lexer
 from parser_tokens import parse; ''',variable_parse, variable_print, Var'''
 from temp_parser import variable_parse, variable_print, Var
-from SemanticAnalyzer import semantic_analyzer
+from SemanticAnalyzer import SemanticAnalyzerWithStack
 from code_generator import generate_TAC_from_semantic
 from object_code_generator import object_parser , object_code_to_binary
+from graphviz import Digraph
+
+""" -----------------------------PRINTER-------------------------------------- """
+def visualize_proper_syntax_tree(syntax_tree, output_file="syntax_tree"):
+    dot = Digraph(comment='Syntax Tree')
+    
+    def add_nodes_edges(tree, parent=None):
+        for node in tree:
+            if len(node) < 2:
+                continue
+            node_id = str(id(node))
+            label = node[0]
+            dot.node(node_id, label)
+            if parent:
+                dot.edge(parent, node_id)
+            if isinstance(node[1], list):
+                add_nodes_edges(node[1], node_id)
+            else:
+                child_id = str(id(node[1]))
+                dot.node(child_id, node[1])
+                dot.edge(node_id, child_id)
+            if len(node) > 2:
+                terminal_id = str(id(node[2]))
+                dot.node(terminal_id, node[2])
+                dot.edge(node_id, terminal_id)
+    
+    add_nodes_edges(syntax_tree)
+    
+    dot.format = 'png'
+    dot.render(output_file, view=False)
+# Example usage
 
 # Leer el archivo source_code.c
 with open('source_code.c', 'r') as file:
@@ -11,11 +42,9 @@ with open('source_code.c', 'r') as file:
 
 
 """ -----------------------------LEXER-------------------------------------- """
-# Ejecutar el lexer con variables
 tokens = lexer(codigo)
 """ -----------------------------PARSER------------------------------------- """
-# Parsear el código fuente
-parse_table = {
+Grammar_table = {
     # Existing entries (# means comment and edditions) 
     "SOURCE": {
         "#include": ["SOURCEBLOCK", "MAINFUNCTION"],
@@ -772,57 +801,19 @@ parse_table = {
     }
 }
 
-result = parse(tokens, parse_table)
-print(result)
+parse_tree = parse(tokens, Grammar_table)
 
 
-variables = variable_parse(tokens, parse_table)
-variable_print(variables)
-#---------------------------SEMANTICO------------------------------------
+""" print(parse_tree) """
+
+visualize_proper_syntax_tree(parse_tree, "syntax_tree_output")
+
+
+
+symbol_table = variable_parse(tokens, Grammar_table)
+variable_print(symbol_table)
+""" print(symbol_table) """
+""" ---------------------------SEMANTICO------------------------------------ """
 print("\n SEMANTICO\n")
-#llamando al analizador semantico
-
-vars_list = [
-    # Defines
-    Var("vi", "vector<int>", "INT", "DEFINE", 1),
-    Var("loop", "for(int x = 0; x < n; ++x)", "MACRO", "DEFINE", 2, "(x, n)"),
-    Var("macro", "(x < 10)", "MACRO", "DEFINE", 3, "(x)"),
-    Var("macro3", "(x * 10)", "MACRO", "DEFINE", 4, "(x)"),
-
-    # Variables in factorial function
-    Var("result", "1", "int", "Function scope: factorial", 10),
-    Var("result2", "20.2", "float", "Function scope: factorial", 10),
-    Var("result3", "3.3f", "float", "Function scope: factorial", 10),
-    Var("a", "'a'", "char", "Function scope: factorial", 10),
-    Var("i", "1", "int", "For Loop", 12),
-    Var("b", "'b'", "char", "If Statement", 14),
-
-    # Variables in main function
-    Var("x", "5", "int", "main scope", 1),
-    Var("y", "'y'", "char", "main scope", 1),
-
-    # Function declarations
-    Var("factorial", "null", "int", "Global", 8),
-    Var("main", "null", "void", "Global", 20),
-]
-
-
-""" 
-semantic_analyzer()   """
-#TODO: change variable_parse to vars_list
-
-"""#------------------------CODIGO INTERMEDIO-------------------------------
-print("\nCODIGO INTERMEDIO\n")
-tac = generate_TAC_from_semantic(vars[0])
-print(tac)
-#-------------------------CODIGO OBJETO----------------------------------
-print("\nCODIGO OBJETO\n")
-
-object_code = object_parser(tac)
-
-binary = object_code_to_binary(object_code)
-
-print("\nCODIGO BINARIO\n")
-
-print(binary)"""
-
+semantic_analyzer = SemanticAnalyzerWithStack(symbol_table, parse_tree)
+semantic_analyzer.analyze()
