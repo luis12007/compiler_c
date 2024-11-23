@@ -544,11 +544,11 @@ Grammar_table = {
     #-----------VARDESVERGUE-----------#
     # INTLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT updated
     "INTLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT": {
-    "=": ["=", "EXPRESSION_INT", "INTLIST"], 
-    ",": [",", "VARNAME", "INTLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT"],  
-    ";": [";"],  
-    "ɛ": []
-},
+        "=": ["=", "EXPRESSION_INT", "INTLIST"], 
+        ",": [",", "VARNAME", "INTLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT"],  
+        ";": [";"],  
+        "ɛ": []
+    },
     # EXPRESSION added (New Rule)
     "EXPRESSION_INT": {
         "VARNAME": ["TERM_INT", "EXPRESSION_TAIL"], 
@@ -580,14 +580,24 @@ Grammar_table = {
     },
     #-----------VARDESVERGUE-----------#
     
-        # FLOATLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT
-        "FLOATLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT": {  
-        "=": ["=", "FLOATVAL", "FLOATLIST"],  
+    # FLOATLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT
+    "FLOATLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT": {  
+        "=": ["=", "EXPRESSION_FLOAT", "FLOATLIST"],  
         ",": ["FLOATLIST"],
         ")": ["ɛ"],
         "ɛ": []
     },
     
+    "EXPRESSION_FLOAT": {
+        "VARNAME": ["TERM_FLOAT", "EXPRESSION_TAIL"], 
+        "INTVAL": ["TERM_FLOAT", "EXPRESSION_TAIL"], 
+        "(": ["(", "EXPRESSION_FLOAT", ")", "EXPRESSION_TAIL"]
+    },
+
+    "TERM_FLOAT": {
+        "VARNAME": ["VARNAME"],
+        "INTVAL": ["FLOATVAL"] 
+    },
     
     # CHARLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT
     "CHARLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT": {
