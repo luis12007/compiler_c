@@ -17,10 +17,9 @@ int factorial(int n) {
     float eq = 2/3*result^-2;
 
 
-
     /* ASINGNACION CON VARIABLES */
     int sum = result / 1  + result3 + 2;
-    /* float sum2 = result2 + result3 + 3; */
+    float sum2 = result2 + result3 + 3;
 
     /* FOR LOOP */
     for (int i = 1; i <= n; i++) {
