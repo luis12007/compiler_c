@@ -12,13 +12,13 @@
 int factorial(int n) {
 
     /* VARIABLES */
-      result = 1;
+    int  = 1
     float result2 = 20.2, result3 = 3.3f;
     char a = 'a';
 
     /* FOR LOOP */
     for (int i = 1; i <= n; i++){
-        result = result * i;
+        result = result * i
     }
 
     /* IF STATEMENT */
@@ -29,9 +29,9 @@ int factorial(int n) {
         result = 20;
     } 
     return result;
+
+
 }
-
-
 /* MAIN FUNCTION */
 void main() {
     return;

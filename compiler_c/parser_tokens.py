@@ -1,5 +1,6 @@
 from prettytable import PrettyTable
 import re
+import time
 
 class Token:
     def __init__(self, tipo, valor, linea):
@@ -92,9 +93,11 @@ def parse(tokens, parse_table):
                         if rule != ['ɛ']:
                             stack.extend(reversed(rule))
                     else:
-                        handle_error_non_terminal(top, current_token, index, tokens)
-                        errr_stack.append(f"El error actual fue {top} y el token fue {current_token}")
-                        #continue
+                        print("error 1")
+                        time.sleep(15)
+                        tokens, errr_iteration, index = handle_error_non_terminal(top, current_token, index, tokens, parse_table)
+                        errr_stack.append(errr_iteration)
+                        continue
                     display_syntax_tree(stack + [top], current_token, result, transition)
                     continue
                 elif top == current_token.valor:
@@ -124,7 +127,10 @@ def parse(tokens, parse_table):
                 if rule != ['ɛ']:
                     stack.extend(reversed(rule))
             else:
-                handle_error_non_terminal(top, current_token,  index, tokens)
+                print("error 2")
+                time.sleep(15)
+                tokens, errr_iteration, index = handle_error_non_terminal(top, current_token, index, tokens, parse_table)
+                errr_stack.append(errr_iteration)
                 continue
             display_syntax_tree(stack + [top], current_token, result, transition)
         #Terminal handling
@@ -148,6 +154,7 @@ def parse(tokens, parse_table):
     if index == len(tokens) and not stack:
         print(len(tokens), index, stack)
         print(errr_stack)
+        
         print("\nParsing completed successfully: Syntax correct.")
         return "yes"
     else:
@@ -159,8 +166,61 @@ def parse(tokens, parse_table):
 """-----------------------ERROR HANDLER--------------------"""
 
 # New function: Error handler
-def handle_error_non_terminal(stack_top, current_tkn, index, tokens):
-    print("Ha ocurrido un error")
+def handle_error_non_terminal(stack_top, current_tkn, index, tokens, parse_table):
+    global errr_stack
+
+    print(f"Error detected with non-terminal: {stack_top} and token: {current_tkn.valor}")
+    error_fixed = False
+
+    # Estrategia 1: Omitir tokens no válidos(Contemplado a lo mucho avanzar 1 token adelante(Cumpliendo gramática LL1))
+    if current_tkn.valor not in parse_table[stack_top] or current_tkn.tipo not in parse_table[stack_top]:
+        if tokens[index + 1].valor in parse_table[stack_top] or tokens[index + 1].tipo in parse_table[stack_top]:
+            print(f"Missing token found")
+            del tokens[index]
+            index += 1
+            error_msg = f"There is a token not expected in the line {current_tkn.linea}"
+            print(error_msg)
+            time.sleep(15)
+            return tokens, error_msg, index
+        
+
+    # Estrategia 2: Insertar tokens faltantes(Contemplar tokens faltantes(Los cuales podrían ser mucho, reducir número))
+    token_key = current_tkn.valor if current_tkn.valor in parse_table[stack_top] else current_tkn.tipo 
+    if token_key not in parse_table[stack_top]:
+        print(f"Inserting missing token for non-terminal: {stack_top}")
+        missing_token = find_missing_token(stack_top, parse_table, current_tkn.linea)  # Función para determinar el token esperado
+        error_msg = f"There is a missing token in the line {current_tkn.linea}, please insert the correct element following the sintax"
+        print(error_msg)
+        time.sleep(15)
+        tokens.insert(index, missing_token)
+        index += 1
+        error_fixed = True
+        #Salta a la siguiente iteración sin aumentar el número del elemento
+        return tokens, error_msg, index
+
+    # Estrategia 3: Eliminar no terminal mal posicionado
+    if not error_fixed:
+        print(f"Removing invalid non-terminal: {stack_top} from stack") 
+        # Omite el no terminal actual
+        
+        error_msg = f"Sintax error in the line {current_tkn.linea}, please verify the sintax"
+        print(error_msg)
+        time.sleep(15)
+
+        
+        return tokens, error_msg, index
+    #Asegurarse que avance a la siguiente iteración
+
+
+        
+def find_missing_token(non_terminal, parse_table, current_line):
+    # Encuentra el primer token válido basado en First(non_terminal)
+    if non_terminal in parse_table:
+        for key in parse_table[non_terminal]:
+            # Retorna el primer token válido en la tabla
+            if key != "ɛ":  # Ignoramos las producciones vacías
+                return Token(key, key, current_line)  # Simula un token con valor y tipo igual
+    return Token("$", "EOF", current_line)  # Token de fin como fallback
 
 
 def handle_error_terminal(stack_top, current_tkn, index, tokens):
