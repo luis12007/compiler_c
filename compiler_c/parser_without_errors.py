@@ -11,7 +11,7 @@ class Token:
         return f"Token({self.tipo}, {self.valor}, Linea: {self.linea})"
 
 
-def parse(tokens, parse_table):
+def parse_without_errors(tokens, parse_table):
     stack = ['$']
     stack.append('SOURCE')  # Start with the grammar's starting symbol
 

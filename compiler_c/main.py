@@ -2,6 +2,7 @@ from lexer import lexer
 from parser_tokens import parse, variable_parse, variable_print, Var
 from printer import process_syntax_tree
 from SemanticAnalyzer import semantic_analysis
+from parser_without_errors import parse_without_errors
 
 # Leer el archivo source_code.c
 with open('source_code.c', 'r') as file:
@@ -9,6 +10,7 @@ with open('source_code.c', 'r') as file:
 
 """ -----------------------------LEXER-------------------------------------- """
 tokens = lexer(codigo)
+tokens2 = tokens.copy() 
 """ -----------------------------PARSER------------------------------------- """
 Grammar_table = {
     # Existing entries (# means comment and edditions) 
@@ -507,7 +509,7 @@ Grammar_table = {
         ";": ["ɛ"]
     },
     
-    #-----------VARDESVERGUE-----------#
+    #----------------------#
     # INTLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT updated
     "INTLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT": {
         "=": ["=", "EXPRESSION_INT", "INTLIST"], 
@@ -519,12 +521,19 @@ Grammar_table = {
     "EXPRESSION_INT": {
         "VARNAME": ["TERM_INT", "EXPRESSION_TAIL"], 
         "INTVAL": ["TERM_INT", "EXPRESSION_TAIL"], 
-        "(": ["(", "EXPRESSION_INT", ")", "EXPRESSION_TAIL"]
+        "(": ["(", "EXPRESSION_INT", ")", "EXPRESSION_TAIL"],
+        ",": ["ɛ"],
     },
 
     "TERM_INT": {
         "VARNAME": ["VARNAME"],
-        "[0-9][0-9]*": ["[0-9][0-9]*"] 
+        "[0-9][0-9]*": ["[0-9][0-9]*"],
+        "-": ["ɛ"],
+        "+": ["ɛ"],
+        "-": ["ɛ"],
+        "*": ["ɛ"],
+        "/": ["ɛ"],
+        "^": ["ɛ"] 
     },
 
     "EXPRESSION_TAIL": {
@@ -534,7 +543,8 @@ Grammar_table = {
         "/": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"],
         "^": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"],
         ";": ["ɛ"],  
-        "ɛ": ["ɛ"]  
+        "ɛ": ["ɛ"],
+        ",": ["ɛ"],
     },
 
         "OPERATOR": {
@@ -544,7 +554,7 @@ Grammar_table = {
         "/": ["/"],
         "^": ["^"]  
     },
-    #-----------VARDESVERGUE-----------#
+    #----------------------#
     
     # FLOATLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT
     "FLOATLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT": {  
@@ -557,12 +567,20 @@ Grammar_table = {
     "EXPRESSION_FLOAT": {
         "VARNAME": ["TERM_FLOAT", "EXPRESSION_TAIL"], 
         "INTVAL": ["TERM_FLOAT", "EXPRESSION_TAIL"], 
-        "(": ["(", "EXPRESSION_FLOAT", ")", "EXPRESSION_TAIL"]
+        "(": ["(", "EXPRESSION_FLOAT", ")", "EXPRESSION_TAIL"],
+        ",": ["ɛ"],
+
     },
 
     "TERM_FLOAT": {
         "VARNAME": ["VARNAME"],
-        "INTVAL": ["FLOATVAL"] 
+        "INTVAL": ["FLOATVAL"],
+        "-": ["ɛ"],
+        "+": ["ɛ"],
+        "-": ["ɛ"],
+        "*": ["ɛ"],
+        "/": ["ɛ"],
+        "^": ["ɛ"] 
     },
     
     # CHARLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT
@@ -730,7 +748,13 @@ Grammar_table = {
         ";": ["ɛ"],
         "}": ["ɛ"],
         ")": ["ɛ"],
-        "ɛ": []
+        "ɛ": [],
+        "+": ["ɛ"],
+        "-": ["ɛ"],
+        "*": ["ɛ"],
+        "/": ["ɛ"],
+        "^": ["ɛ"]  
+
     },
     
     "CHARVAL": {
@@ -778,11 +802,12 @@ Grammar_table = {
 }
 
 parse_tree = parse(tokens, Grammar_table)
+# parse_tree = parse_without_errors(tokens, Grammar_table)
 """ print(parse_tree) """
 
 process_syntax_tree(parse_tree, "syntax_tree_output")
 
-symbol_table = variable_parse(tokens, Grammar_table)
+symbol_table = variable_parse(tokens2, Grammar_table)
 variable_print(symbol_table)
 """ print(symbol_table) """
 
