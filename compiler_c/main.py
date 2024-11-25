@@ -545,6 +545,8 @@ Grammar_table = {
         ";": ["ɛ"],  
         "ɛ": ["ɛ"],
         ",": ["ɛ"],
+        ".": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"]
+
     },
 
         "OPERATOR": {
@@ -552,7 +554,8 @@ Grammar_table = {
         "-": ["-"],
         "*": ["*"],
         "/": ["/"],
-        "^": ["^"]  
+        "^": ["^"],
+        ".": ["."]
     },
     #----------------------#
     
@@ -801,8 +804,8 @@ Grammar_table = {
     }
 }
 
-parse_tree = parse(tokens, Grammar_table)
-# parse_tree = parse_without_errors(tokens, Grammar_table)
+# parse_tree = parse(tokens, Grammar_table)
+parse_tree = parse_without_errors(tokens, Grammar_table)
 """ print(parse_tree) """
 
 process_syntax_tree(parse_tree, "syntax_tree_output")

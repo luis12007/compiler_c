@@ -11,14 +11,14 @@
 int factorial(int n) {
 
     /* VARIABLES */
-    int result = 1, result2 = 2;
+    int result = 1.2, result2 = 2;
     float result2 = 20.2, result3 = 3.3f;
     char a = 'a';
-    float eq = 2/3*result^-2;
+    float eq = 2.2/3.3*result^-2;
 
 
     /* ASINGNACION CON VARIABLES */
-    int sum = result / 1  + result3 + 2;
+    int sum = result / 1.4  + result3 + 2;
     float sum2 = result2 + result3 + 3;
 
     /* FOR LOOP */

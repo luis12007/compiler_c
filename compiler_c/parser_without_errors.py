@@ -115,6 +115,11 @@ def parse_without_errors(tokens, parse_table):
 # New function: Error handler
 def handle_error(message, stack, index, tokens):
     
+    print("\nParsing error:")
+    print(message)
+    print("\nStack:", stack)
+    print("Current token index:", index)
+    print("Current token:", tokens[index])
 
 
     return index

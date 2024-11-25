@@ -160,16 +160,38 @@ def validate_symbol_table(symbol_table):
                     evaluated_value = evaluate_expression(substituted_expression)
 
                     # Type checks after evaluation
-                    if entry.var_type == "int" and not isinstance(evaluated_value, int):
-                        errors.append(
-                            f"Type error: Expression '{entry.value}' evaluates to '{evaluated_value}', which cannot be assigned to int variable '{entry.name}' at line {entry.line}."
-                        )
-                    elif entry.var_type == "float" and not isinstance(evaluated_value, (int, float)):
-                        errors.append(
-                            f"Type error: Expression '{entry.value}' evaluates to '{evaluated_value}', which cannot be assigned to float variable '{entry.name}' at line {entry.line}."
-                        )
+                    if entry.var_type == "int":
+                        if isinstance(evaluated_value, float) and not evaluated_value.is_integer():
+                            errors.append(
+                                f"Type error: Expression '{entry.value}' evaluates to '{evaluated_value}', which cannot be assigned to int variable '{entry.name}' at line {entry.line}."
+                            )
+                        elif not isinstance(evaluated_value, int):
+                            errors.append(
+                                f"Type error: Expression '{entry.value}' evaluates to '{evaluated_value}', which cannot be assigned to int variable '{entry.name}' at line {entry.line}."
+                            )
+                    elif entry.var_type == "float":
+                        if not isinstance(evaluated_value, (int, float)):
+                            errors.append(
+                                f"Type error: Expression '{entry.value}' evaluates to '{evaluated_value}', which cannot be assigned to float variable '{entry.name}' at line {entry.line}."
+                            )
                 except ValueError as e:
                     errors.append(f"Type error: {e}")
+            elif entry.var_type == "int":
+                # Direct value checks for int
+                if isinstance(entry.value, float) and not entry.value.is_integer():
+                    errors.append(
+                        f"Type error: Value '{entry.value}' cannot be assigned to int variable '{entry.name}' at line {entry.line}."
+                    )
+                elif not isinstance(entry.value, int) and not entry.value.isdigit():
+                    errors.append(
+                        f"Type error: Value '{entry.value}' is not a valid integer for variable '{entry.name}' at line {entry.line}."
+                    )
+            elif entry.var_type == "float":
+                # Direct value checks for float
+                if not isinstance(entry.value, (int, float)) and not re.match(r"^\d+(\.\d+)?$", str(entry.value)):
+                    errors.append(
+                        f"Type error: Value '{entry.value}' cannot be assigned to float variable '{entry.name}' at line {entry.line}."
+                    )
 
 
 # ---------------- Analyze ----------------
