@@ -418,8 +418,8 @@ def compile(source, flag):
         },
 
         "OPTIONAL_VARVAL": {
-            "VARNAME": ["ARITH_EXPR"],    
-            "INTVAL": ["ARITH_EXPR"],       
+            "VARNAME": ["VARNAME", "EXPRESSION_TAIL"],    
+            "INTVAL": ["ARITH_EXPR"],
             "FLOATVAL": ["ARITH_EXPR"],    
             "CHARVAL": ["ARITH_EXPR"],      
             "STRINGVAL": ["ARITH_EXPR"],   
@@ -547,10 +547,9 @@ def compile(source, flag):
             "ɛ": ["ɛ"],
             ",": ["ɛ"],
             ".": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"]
-
         },
 
-            "OPERATOR": {
+        "OPERATOR": {
             "+": ["+"],
             "-": ["-"],
             "*": ["*"],
@@ -569,11 +568,22 @@ def compile(source, flag):
         },
         
         "EXPRESSION_FLOAT": {
-            "VARNAME": ["TERM_FLOAT", "EXPRESSION_TAIL"], 
-            "INTVAL": ["TERM_FLOAT", "EXPRESSION_TAIL"], 
-            "(": ["(", "EXPRESSION_FLOAT", ")", "EXPRESSION_TAIL"],
+            "VARNAME": ["TERM_FLOAT", "EXPRESSION_TAIL_FLOAT"], 
+            "INTVAL": ["TERM_FLOAT", "EXPRESSION_TAIL_FLOAT"], 
+            "(": ["(", "EXPRESSION_FLOAT", ")", "EXPRESSION_TAIL_FLOAT"],
             ",": ["ɛ"],
+        },
 
+        "EXPRESSION_TAIL_FLOAT": {
+            "+": ["OPERATOR", "TERM_FLOAT", "EXPRESSION_TAIL_FLOAT"],
+            "-": ["OPERATOR", "TERM_FLOAT", "EXPRESSION_TAIL_FLOAT"],
+            "*": ["OPERATOR", "TERM_FLOAT", "EXPRESSION_TAIL_FLOAT"],
+            "/": ["OPERATOR", "TERM_FLOAT", "EXPRESSION_TAIL_FLOAT"],
+            "^": ["OPERATOR", "TERM_FLOAT", "EXPRESSION_TAIL_FLOAT"],
+            ";": ["ɛ"],  
+            "ɛ": ["ɛ"],
+            ",": ["ɛ"],
+            ".": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"]
         },
 
         "TERM_FLOAT": {
@@ -728,8 +738,7 @@ def compile(source, flag):
         
         "FACTOR": {
             "VARNAME": ["VARNAME"],
-            "INTVAL": ["INTVAL"],
-            "FLOATVAL": ["FLOATVAL"],
+            "INTVAL": ["INTVAL", "FLOAT_AUX"],
             "CHARVAL": ["CHARVAL"],
             "STRINGVAL": ["STRINGVAL"],
             "DOUBLEVAL": ["DOUBLEVAL"],
