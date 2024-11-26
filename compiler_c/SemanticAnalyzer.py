@@ -250,12 +250,20 @@ def get_function_names_and_types(parse_tree):
     function_details = []  # To store the function names and types
 
     # Iterate through the parse tree to find FUNCDEC nodes
+    isreturn = True
+    func_type = None
+    func_name = None
+    return_type = None
     for i, node in enumerate(parse_tree):
 
         if node[0] == 'FUNCDEC':  # Look for FUNCDEC node
+            if isreturn == False:
+                function_details.append((func_name, func_type, return_type ))
             func_type = None
             func_name = None
             return_type = None
+            isreturn = False
+            print(isreturn)
             print("---------------------------------")
 
             # Check the next nodes for FUNCTYPE and FUNCTION int, string, float, char, void
@@ -272,8 +280,6 @@ def get_function_names_and_types(parse_tree):
             # Store function details if both name and type are found
             
         if node[0] == 'OPTIONAL_VARVAL':
-            
-
 
             """ print("OPTIONAL_VARVAL")
             print("plus 1" + str(parse_tree[i + 1]))
@@ -295,8 +301,12 @@ def get_function_names_and_types(parse_tree):
             # String and charts
             if i + 1 < len(parse_tree) and parse_tree[i + 1][1] != 'ARITH_EXPR':
                 return_type = parse_tree[i][1]
+                isreturn == True
+
                 if parse_tree[i][1] == ['VARNAME', 'EXPRESSION_TAIL']:
                     return_type = parse_tree[i + 1][1]
+                    isreturn == True
+
             
             # string and floats
             if i + 4 < len(parse_tree) and parse_tree[i + 1][0] == 'ARITH_EXPR':
@@ -304,8 +314,12 @@ def get_function_names_and_types(parse_tree):
             
                 if i + 5 < len(parse_tree) and parse_tree[i + 5][1] == ['ɛ']:
                     return_type = parse_tree[i + 4][1]
+                    isreturn == True
+
                 elif i + 8 < len(parse_tree) and parse_tree[i + 5][1] != ['ɛ']:
                     return_type = float(str(parse_tree[i + 4][1]) + str(parse_tree[i + 6][1]) + str(parse_tree[i + 8][1]))
+                    isreturn == True
+
 
             print(func_name)
             print(func_type)
@@ -314,11 +328,13 @@ def get_function_names_and_types(parse_tree):
             if func_name and func_type and return_type:
                 function_details.append((func_name, func_type, return_type ))
 
+
+        
     # Print all function names and types
-    """ print(function_details)
+    print(function_details)
     print("Function Names and Types:")
     for func_name, func_type, return_type in function_details:
-        print(f"Function Name: {func_name}, Type: {func_type} return type: {return_type}") """
+        print(f"Function Name: {func_name}, Type: {func_type} return type: {return_type}")
 
     return function_details
 

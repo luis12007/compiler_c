@@ -34,7 +34,6 @@ int factorial(int n) {
     } else {
         result = 20;
     } 
-    return "factorial";
 }
 
 
