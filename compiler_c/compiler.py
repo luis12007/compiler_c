@@ -297,7 +297,7 @@ def compile(source, flag):
         
         #TODO: ADD CONDITION TO CURRENT LL1 GRAMMAR
         "FORLOOP": {
-            "for": ["for", "(", "FORVAR", ";", "CONDITION", ";", "VARCHANGESTATEMENT", ")", "{", "STATEMENT", "}", "STATEMENT"]
+            "for": ["for", "(", "FORVAR", ";", "CONDITION", ";", "VARCHANGESTATEMENT", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}", "STATEMENT"]
         },
 
         #Added CONDITION FOR 
@@ -353,11 +353,11 @@ def compile(source, flag):
         },
         
         "WHILELOOP": {
-            "while": ["while", "(", "CONDITION", ")", "{", "STATEMENT", "}"]
+            "while": ["while", "(", "CONDITION", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}"]
         },
         
         "DOWHILELOOP": {
-            "do": ["do", "{", "STATEMENT", "}", "while", "(", "CONDITION", ")"]
+            "do": ["do", "{", "STATEMENT", "RETURNSTATEMENT", "}", "while", "(", "CONDITION", ")"]
         },
         
         "VARNAME": {
