@@ -11,7 +11,8 @@
 int factorial(int n) {
 
     /* VARIABLES */
-    int result = 1.2, result2 = 2;
+    float result = 50.0;
+    int result = 1, result2 = 2;
     float result2 = 20.2, result3 = 3.3f;
     char a = 'a';
     float eq = 2.2/3.3*result^-2;

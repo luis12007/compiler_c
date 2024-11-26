@@ -134,16 +134,26 @@ def validate_parameterized_expression(expression, parameters):
 
 
 # ---------------- Validate Symbol Table ----------------
+# ---------------- Validate Symbol Table ----------------
 def validate_symbol_table(symbol_table):
     """
     Validates the symbol table for semantic errors.
     """
     global errors, processed_define_statements
+    variable_names = set()  # Track variable names to detect duplicates
 
     for entry in symbol_table:
         # Skip entries already validated in Define Statement
         if entry.name in processed_define_statements:
             continue
+
+        # Check for duplicate variable names
+        if entry.name in variable_names:
+            errors.append(
+                f"Semantic error: Duplicate variable name '{entry.name}' found at line {entry.line}."
+            )
+        else:
+            variable_names.add(entry.name)
 
         # Check for uninitialized variables
         if entry.value is None or entry.value == "" or entry.value == 'None':
@@ -192,7 +202,6 @@ def validate_symbol_table(symbol_table):
                     errors.append(
                         f"Type error: Value '{entry.value}' cannot be assigned to float variable '{entry.name}' at line {entry.line}."
                     )
-
 
 # ---------------- Analyze ----------------
 def semantic_analysis(symbol_table, parse_tree):
