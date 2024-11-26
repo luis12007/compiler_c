@@ -1,2 +1,3 @@
 .vscode/
 __pycache__/
+syntax_tree_output.*
