@@ -268,7 +268,7 @@ def compile(source, flag):
         },
 
         "IF":{
-            "if": ["if", "(", "CONDITION", ")", "{", "STATEMENT", "}", "ELSE"]
+            "if": ["if", "(", "CONDITION", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}", "ELSE"]
         },
 
         "ELSE":{
@@ -277,8 +277,8 @@ def compile(source, flag):
         },
 
         "ELSEIF":{
-            "if": ["if", "(", "CONDITION", ")", "{", "STATEMENT", "}", "ELSE"],
-            "{": ["{", "STATEMENT", "}"]
+            "if": ["if", "(", "CONDITION", ")", "{", "STATEMENT", "RETURNSTATEMENT", "}", "ELSE"],
+            "{": ["{", "STATEMENT", "RETURNSTATEMENT", "}"]
         },
         
         "SWITCHSTATEMENT": {
@@ -414,7 +414,8 @@ def compile(source, flag):
 
         # CHANGED
         "RETURNSTATEMENT": {
-            "return": ["return", "OPTIONAL_VARVAL", ";"]
+            "return": ["return", "OPTIONAL_VARVAL", ";"],
+            "}":["ɛ"]
         },
 
         "OPTIONAL_VARVAL": {

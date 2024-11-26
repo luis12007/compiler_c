@@ -6,7 +6,13 @@
 
 /* FUNCTIONS */
 int factorial(int n) {
-    return 3.2;
+    if(n > 10){
+        char a = 'a';
+        return n;
+    }
+    else{
+        return 10;
+    }
 }
 
 

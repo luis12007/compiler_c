@@ -427,8 +427,6 @@ def variable_parse(tokens, parse_table):
                         if(top == "FUNCINIT"):
                             current_scope.append("Function Initialization")
                             variable_param = "("
-                        elif(top == "FUNCDEC"):
-                            current_scope.append("Function Declaration")
                         elif(top == "FUNCTION" or top == "VOID_FUNCTION"):
                             current_scope.append("Function Body")
                             function = True
@@ -480,43 +478,43 @@ def variable_parse(tokens, parse_table):
                             if(function):
                                 functiontype = "int"
                                 function = False
-                            elif(variable_declaration):
+                            else:
                                 variable_type = "int"
                         case "float":
                             if(function):
                                 functiontype = "float"
                                 function = False
-                            elif(variable_declaration):
+                            else:
                                 variable_type = "float"
                         case "char":
                             if(function):
                                 functiontype = "char"
                                 function = False
-                            elif(variable_declaration):
+                            else:
                                 variable_type = "char"
                         case "string":
                             if(function):
                                 functiontype = "string"
                                 function = False
-                            elif(variable_declaration):
+                            else:
                                 variable_type = "string"
                         case "double":
                             if(function):
                                 functiontype = "double"
                                 function = False
-                            elif(variable_declaration):
+                            else:
                                 variable_type = "double"
                         case "long":
                             if(function):
                                 functiontype = "long"
                                 function = False
-                            elif(variable_declaration):
+                            else:
                                 variable_type = "long"
                         case "short":
                             if(function):
                                 functiontype = "short"
                                 function = False
-                            elif(variable_declaration):
+                            else:
                                 variable_type = "short"
                             
                     # Variable saving
@@ -598,8 +596,6 @@ def variable_parse(tokens, parse_table):
                 if(top == "FUNCINIT"):
                     current_scope.append("Function Initialization")
                     variable_param = "("
-                elif(top == "FUNCDEC"):
-                    current_scope.append("Function Declaration")
                 elif(top == "FUNCTION" or top == "VOID_FUNCTION"):
                     function = True
                     current_scope.append("Function Body")
@@ -655,43 +651,43 @@ def variable_parse(tokens, parse_table):
                     if(function):
                         functiontype = "int"
                         function = False
-                    elif(variable_declaration):
+                    else:
                         variable_type = "int"
                 case "float":
                     if(function):
                         functiontype = "float"
                         function = False
-                    elif(variable_declaration):
+                    else:
                         variable_type = "float"
                 case "char":
                     if(function):
                         functiontype = "char"
                         function = False
-                    elif(variable_declaration):
+                    else:
                         variable_type = "char"
                 case "string":
                     if(function):
                         functiontype = "string"
                         function = False
-                    elif(variable_declaration):
+                    else:
                         variable_type = "string"
                 case "double":
                     if(function):
                         functiontype = "double"
                         function = False
-                    elif(variable_declaration):
+                    else:
                         variable_type = "double"
                 case "long":
                     if(function):
                         functiontype = "long"
                         function = False
-                    elif(variable_declaration):
+                    else:
                         variable_type = "long"
                 case "short":
                     if(function):
                         functiontype = "short"
                         function = False
-                    elif(variable_declaration):
+                    else:
                         variable_type = "short"
                 case "void":
                     functiontype = "void"
