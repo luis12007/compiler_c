@@ -11,15 +11,15 @@
 int factorial(int n) {
 
     /* VARIABLES */
-    float result = 50.0;
-    int result = 1, result2 = 2;
+    float result33 = 50.0;
+    int result = 1, result22 = 2;
     float result2 = 20.2, result3 = 3.3f;
-    char a = 'a';
+    char a = 'c';
     float eq = 2.2/3.3*result^-2;
 
 
     /* ASINGNACION CON VARIABLES */
-    int sum = result / 1.4  + result3 + 2;
+    int sum = result / 1  + result3 + 2;
     float sum2 = result2 + result3 + 3;
 
     /* FOR LOOP */
@@ -30,11 +30,11 @@ int factorial(int n) {
     /* IF STATEMENT */
     if (result2 >= 10.0) {
         result = 10;
-        char b = 'b';
+        char b = 's';
     } else {
         result = 20;
     } 
-    return result;
+    return "factorial";
 }
 
 

@@ -418,7 +418,8 @@ def compile(source, flag):
         },
 
         "OPTIONAL_VARVAL": {
-            "VARNAME": ["VARNAME", "EXPRESSION_TAIL"],    
+            "VARNAME": ["VARNAME", "EXPRESSION_TAIL"],
+            "\"[^\"]*\"|'[^']*'": ["\"[^\"]*\"|'[^']*'", "EXPRESSION_TAIL"],    
             "INTVAL": ["ARITH_EXPR"],
             "FLOATVAL": ["ARITH_EXPR"],    
             "CHARVAL": ["ARITH_EXPR"],      
@@ -826,6 +827,6 @@ def compile(source, flag):
 
     """ ---------------------------SEMANTICO------------------------------------ """
     print("\n SEMANTICO\n")
-    """ TODO:parse_tree? """
+    print(parse_tree)
     semantic_analysis(symbol_table, parse_tree)
 
