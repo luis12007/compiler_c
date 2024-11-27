@@ -413,6 +413,7 @@ def variable_parse(tokens, parse_table):
     variable_name = ""
     variable_type = ""
     value_flag = False
+    value_parenthesis = []
     variable_value = ""
     variable_line = ""
     variable_param = ""
@@ -521,10 +522,19 @@ def variable_parse(tokens, parse_table):
                     if(top == "=" and variable_declaration):
                         value_flag = True
                     elif(top == "," and variable_declaration):
-                        value_flag = False
-                        variable_param += ', '
-                    elif(value_flag and top != ";" and top != ")"):
+                        if(len(value_parenthesis) <= 0):
+                            value_flag = False
+                            variable_param += ', '
+                        else:
+                            variable_value += current_token.valor
+                    elif(top == "(" and value_flag):
                         variable_value += current_token.valor
+                        value_parenthesis.append('(')
+                    elif(value_flag and top != ";"):
+                        variable_value += current_token.valor
+                    elif(top == ')' and len(value_parenthesis) > 0 and value_flag):
+                        variable_value += current_token.valor
+                        value_parenthesis.pop()
                     #Type checking
                     match top :
                         case "int":
@@ -628,11 +638,12 @@ def variable_parse(tokens, parse_table):
                     elif(variable_declaration and current_token.valor == "," and (current_scope[-1] != "")):
                         if(current_scope[-1] == "Function Initialization"):
                             variable_param += variable_name + ", "
-                        variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
-                        variable_name = ""
-                        value_flag = False
-                        variable_value = ""
-                        variable_line = ""
+                        if(len(value_parenthesis) <= 0):
+                            variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
+                            variable_name = ""
+                            value_flag = False
+                            variable_value = ""
+                            variable_line = ""
                     
                     if(current_token.valor == "}"):
                         current_scope.pop()
@@ -694,10 +705,19 @@ def variable_parse(tokens, parse_table):
             if(top == "=" and variable_declaration):
                 value_flag = True
             elif(top == "," and variable_declaration):
-                value_flag = False
-                variable_param += ', '
-            elif(value_flag and top != ";" and top != ")"):
+                if(len(value_parenthesis) <= 0):
+                    value_flag = False
+                    variable_param += ', '
+                else:
+                    variable_value += current_token.valor
+            elif(top == "(" and value_flag):
                 variable_value += current_token.valor
+                value_parenthesis.append('(')
+            elif(value_flag and top != ";"):
+                variable_value += current_token.valor
+            elif(top == ')' and len(value_parenthesis) > 0 and value_flag):
+                variable_value += current_token.valor
+                value_parenthesis.pop()
             #Type checking
             match top :
                 case "int":
@@ -804,11 +824,12 @@ def variable_parse(tokens, parse_table):
             elif(variable_declaration and current_token.valor == "," and (current_scope[-1] != "")):
                 if(current_scope[-1] == "Function Initialization"):
                     variable_param += variable_name + ", "
-                variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
-                variable_name = ""
-                value_flag = False
-                variable_value = ""
-                variable_line = ""
+                if(len(value_parenthesis) <= 0):
+                    variables.append(Var(variable_name, variable_value, variable_type, current_scope[-1], variable_line))
+                    variable_name = ""
+                    value_flag = False
+                    variable_value = ""
+                    variable_line = ""
             
             if(current_token.valor == "}"):
                 current_scope.pop()

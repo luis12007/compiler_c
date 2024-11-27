@@ -859,6 +859,6 @@ def compile(source, flag):
 
     """ ---------------------------SEMANTICO------------------------------------ """
     print("\n SEMANTICO\n")
-    print(parse_tree)
+    #print(parse_tree)
     semantic_analysis(symbol_table, parse_tree)
 
