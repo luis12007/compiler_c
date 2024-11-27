@@ -540,12 +540,12 @@ def compile(source, flag):
         },
 
         "EXPRESSION_TAIL": {
+            ";": ["ɛ"],  
             "+": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"],
             "-": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"],
             "*": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"],
             "/": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"],
             "^": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"],
-            ";": ["ɛ"],  
             "ɛ": ["ɛ"],
             ",": ["ɛ"],
             ".": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"]
@@ -577,12 +577,12 @@ def compile(source, flag):
         },
 
         "EXPRESSION_TAIL_FLOAT": {
+            ";": ["ɛ"],  
             "+": ["OPERATOR", "TERM_FLOAT", "EXPRESSION_TAIL_FLOAT"],
             "-": ["OPERATOR", "TERM_FLOAT", "EXPRESSION_TAIL_FLOAT"],
             "*": ["OPERATOR", "TERM_FLOAT", "EXPRESSION_TAIL_FLOAT"],
             "/": ["OPERATOR", "TERM_FLOAT", "EXPRESSION_TAIL_FLOAT"],
-            "^": ["OPERATOR", "TERM_FLOAT", "EXPRESSION_TAIL_FLOAT"],
-            ";": ["ɛ"],  
+            "^": ["OPERATOR", "TERM_FLOAT", "EXPRESSION_TAIL_FLOAT"], 
             "ɛ": ["ɛ"],
             ",": ["ɛ"],
             ".": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"]
@@ -642,25 +642,25 @@ def compile(source, flag):
         
         # INTLIST with semicolon handling
         "INTLIST": {
+            ";": ["ɛ"],
             ",": [",", "VARNAME", "INTLIST"],
             "=": ["=", "INTVAL", "INTLIST"],
-            ";": ["ɛ"],
             "ɛ": []
         },
         
         # FLOATLIST with semicolon handling
         "FLOATLIST": {
+            ";": ["ɛ"],
             ",": [",", "VARNAME", "FLOATLIST"],
             "=": ["=", "FLOATVAL", "FLOATLIST"],
-            ";": ["ɛ"],
             "ɛ": []
         },
         
         # CHARLIST with semicolon handling
         "CHARLIST": {
+            ";": ["ɛ"],
             ",": [",", "VARNAME", "CHARLIST"],
             "=": ["=", "CHARVAL", "CHARLIST"],
-            ";": ["ɛ"],
             "ɛ": []
         },
         
@@ -786,10 +786,11 @@ def compile(source, flag):
         },
 
         "VARNAMELINE":{
+            "=":["VARCHANGESTATEMENT", ";"],
             "(":["(", "PARAMLIST", ")", ";"],
             "+":["VARCHANGESTATEMENT", ";"],
             "-":["VARCHANGESTATEMENT", ";"],
-            "=":["VARCHANGESTATEMENT", ";"]
+            
         },
         
         "VARCHANGESTATEMENT": {
@@ -816,7 +817,7 @@ def compile(source, flag):
         }
     }
 
-    # parse_tree = parse(tokens, Grammar_table)
+    #parse_tree = parse(tokens, Grammar_table)
     parse_tree = parse_without_errors(tokens, Grammar_table)
     """ print(parse_tree) """
     if(flag):

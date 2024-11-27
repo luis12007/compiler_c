@@ -12,23 +12,23 @@ int factorial(int n) {
 
     /* VARIABLES */
     float result33 = 50.0;
-    int result = 1, result22 = 2;
+    int result =  1, result22 = 22;
     float result2 = 20.2, result3 = 3.3f;
     char a = 'c';
     float eq = 2.2/3.3*result^-2;
 
 
     /* ASINGNACION CON VARIABLES */
-    int sum = result / 1  + result3 + 2;
+    int sum = result / 1  + result3 + 2
     float sum2 = result2 + result3 + 3;
 
     /* FOR LOOP */
-    for (int i = 1; i <= n; i++) {
+     for(int i = 1; i <= n; i++) {
         result = result * i;
     }
 
     /* IF STATEMENT */
-    if (result2 >= 10.0) {
+    if (!result2 >= 10.0) {
         result = 10;
         char b = 's';
     } else {
@@ -38,7 +38,7 @@ int factorial(int n) {
 
 
 /* MAIN FUNCTION */
-void main() {
+main() {
     factorial(1);
     return;
 }
