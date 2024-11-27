@@ -1,6 +1,7 @@
 from prettytable import PrettyTable
 import re
 import time
+import sys
 
 
 class Token:
@@ -14,14 +15,12 @@ class Token:
 
 def parse(tokens, parse_table):
     errr_stack = []
+    counter_error = 0
     stack = ['$']
     stack.append('SOURCE')  # Start with the grammar's starting symbol
 
     tokens.append(Token('$', '$', -1))  # End-of-input marker
     index = 0  # Track the position in the token list
-
-    RESERVED_WORDS = {"char", "int", "float", "return", "void", "if", "else"}  # Reserved words set
-
     # Syntax tree data structure
     syntax_tree = []  # List to store the syntax tree nodes
 
@@ -36,13 +35,12 @@ def parse(tokens, parse_table):
     print(f"Tokens: {tokens}\n")
 
     while stack:
-        print(f"Index: {index}\n")
+        # print(f"Index: {index}\n")
         top = stack.pop()
-        print(f"tOP: {top}\n")
-
+        # print(f"tOP: {top}\n")
         current_token = tokens[index]
-        print(f"current_token: {current_token}\n")
-        print(f"Index: {index}\n")
+        # print(f"current_token: {current_token}\n")
+        # print(f"Index: {index}\n")
         result = ""
         transition = f"{top} -> ɛ"  # Default transition for empty rules
 
@@ -51,7 +49,10 @@ def parse(tokens, parse_table):
             matched = False
             for pattern, compiled_regex in regex_patterns[top].items():
                 if compiled_regex.fullmatch(current_token.valor):
+
                     result = f"Regex match: {current_token.valor}"
+                    transition = f"{top} -> {current_token.valor}"
+
                     matched = True
                     print(f"Caso 1\n")
                     index += 1  # Move to the next token
@@ -64,16 +65,20 @@ def parse(tokens, parse_table):
                     token_key = current_token.valor if current_token.valor in parse_table[top] else current_token.tipo
                     if token_key in parse_table[top]:
                         print(f"Caso 2\n")
+                        
                         rule = parse_table[top][token_key]
                         result = f"Rule found: {top} -> {rule}"
                         transition = f"{top} -> {rule}"
+
+
                         if rule != ['ɛ']:
                             stack.extend(reversed(rule))
                         syntax_tree.append((top, rule, "Rule Applied"))  # Save rule to syntax tree
                     else:
                         print("error 1")
-                        time.sleep(2)
+
                         tokens, errr_iteration, index = handle_error_non_terminal(top, current_token, index, tokens, parse_table)
+                        time.sleep(10)
                         errr_stack.append(errr_iteration)
                         stack.append(top)
                         continue
@@ -87,6 +92,8 @@ def parse(tokens, parse_table):
                     continue
                 else:
                     tokens, errr_iteration = handle_error_terminal(top, current_token,  index, tokens)
+                    time.sleep(10)
+
                     errr_stack.append(errr_iteration)
                     stack.append(top)
                     continue
@@ -94,7 +101,7 @@ def parse(tokens, parse_table):
         # Non-regex non-terminal handling
         elif top in parse_table:
             token_key = current_token.valor if current_token.valor in parse_table[top] else current_token.tipo
-            print(f"token_key: {token_key}\n")
+            # print(f"token_key: {token_key}\n")
 
             if token_key in parse_table[top]:
                 print(f"Caso 4\n")
@@ -106,10 +113,10 @@ def parse(tokens, parse_table):
                 syntax_tree.append((top, rule, "Rule Applied"))  # Save rule to syntax tree
             else:
                 print("error 2")
-                time.sleep(2)
                 tokens, errr_iteration, index = handle_error_non_terminal(top, current_token, index, tokens, parse_table)
                 errr_stack.append(errr_iteration)
                 stack.append(top)
+                time.sleep(10)
                 continue
         #Terminal handling
         elif top == current_token.valor:
@@ -122,23 +129,26 @@ def parse(tokens, parse_table):
 
         else:
             tokens, errr_iteration = handle_error_terminal(top, current_token,  index, tokens)
+            time.sleep(10)
             errr_stack.append(errr_iteration)
             stack.append(top)
             continue
         
 
 
-    if index == len(tokens) and not stack:
+    if index == len(tokens) and not stack and errr_stack == []:
         print(len(tokens), index, stack)
-        print(errr_stack)
         print("\nParsing completed successfully: Syntax correct.")
-        print("Yes")
+        print("YES - Code is syntactically correct.\n")
         return syntax_tree
     else:
         print(len(tokens), index, stack)
         print("\nParsing ended with issues: Stack or token list not empty.")
-        print("No")
-        print(errr_stack)
+        print("NO - Code is syntactically incorrect.\n")
+        if errr_stack != []:
+            print(errr_stack)
+            print("Closing the compiler")
+            sys.exit()
         return syntax_tree
 
 

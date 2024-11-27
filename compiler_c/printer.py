@@ -54,5 +54,4 @@ def process_syntax_tree(syntax_tree, output_name):
     # Save the graph in multiple formats
     graph.write_pdf(f"{output_name}.pdf")
 
-    print(f"Syntax tree textual representation saved as {output_name}.txt")
-    print(f"Syntax tree visual representation saved as {output_name}.pdf")
+    print(f"\nSyntax tree textual representation saved as {output_name}.txt and {output_name}.pdf \n")

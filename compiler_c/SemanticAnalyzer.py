@@ -211,7 +211,7 @@ def semantic_analysis(symbol_table, parse_tree):
     global errors, stack
 
     print("Starting semantic analysis...")
-    print("----------------------------")
+    print("==============================")
 
     # Clean data
     clean_data(symbol_table)
@@ -262,8 +262,8 @@ def get_function_names_and_types(parse_tree):
             func_name = None
             return_type = None
             isreturn = False
-            print(isreturn)
-            print("---------------------------------")
+            #print(isreturn)
+            #print("---------------------------------")
 
             # Check the next nodes for FUNCTYPE and FUNCTION int, string, float, char, void
             if i + 1 < len(parse_tree) and parse_tree[i + 1][0] == 'FUNCTYPE':
@@ -320,9 +320,9 @@ def get_function_names_and_types(parse_tree):
                     isreturn == True
 
 
-            print(func_name)
-            print(func_type)
-            print(return_type)
+            #print(func_name)
+            #print(func_type)
+            #print(return_type)
 
             if func_name and func_type and return_type:
                 function_details.append((func_name, func_type, return_type ))
@@ -330,10 +330,10 @@ def get_function_names_and_types(parse_tree):
 
         
     # Print all function names and types
-    print(function_details)
+    """ print(function_details)
     print("Function Names and Types:")
     for func_name, func_type, return_type in function_details:
-        print(f"Function Name: {func_name}, Type: {func_type} return type: {return_type}")
+        print(f"Function Name: {func_name}, Type: {func_type} return type: {return_type}") """
 
     return function_details
 

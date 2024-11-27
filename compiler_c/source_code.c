@@ -11,24 +11,30 @@
 int factorial(int n) {
 
     /* VARIABLES */
-<<<<<<< HEAD
     float result33 = 50.0;
     int result =  1, result22 = 22;
-=======
-    float float = 50.0;
-    int result = 1, result22 = 2;
->>>>>>> 154d923fe992a2ebe951e72c2a9d32c7637e747d
+
     float result2 = 20.2, result3 = 3.3f;
     char a = 'c';
     float eq = 2.2/3.3*result^-2;
 
+    /* TEST -----------------------------*/
+    /* int int  = 50.0; */
+
+    float floatint = 2;
+
+    int val = macro(1,result);
+    float val = macro(3.2,result);
+
+    /* TEST -----------------------------*/
+
 
     /* ASINGNACION CON VARIABLES */
-    int sum = result / 1  + result3 + 2
+    int sum = result / 1  + result3 + 2;
     float sum2 = result2 + result3 + 3;
 
     /* FOR LOOP */
-     for(int i = 1; i <= n; i++) {
+    for(int i = 1; i <= n; i++) {
         result = result * i;
     }
 
@@ -39,19 +45,19 @@ int factorial(int n) {
     } else {
         result = 20;
     } 
+    return result;
 }
 
 
 /* MAIN FUNCTION */
-main() {
+void main() {
     factorial(1);
     return;
 }
 
 /* TESTING
 
-    float float = 50.0;
-    int val = macro(5);
+
     float invalid_eq = 5.5 / "abc";
 
 

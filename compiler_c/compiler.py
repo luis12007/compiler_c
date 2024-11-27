@@ -360,12 +360,14 @@ def compile(source, flag):
             "do": ["do", "{", "STATEMENT", "RETURNSTATEMENT", "}", "while", "(", "CONDITION", ")"]
         },
         
+        
         "VARNAME": {
             "[a-zA-Z_][a-zA-Z0-9_]*": ["ε"]
         },
         
         "VARNAME_CHECK":{
-            "VARNAME": ["VARNAME"]
+            "VARNAME": ["VARNAME"],
+            
         },
         
         "KEYWORD": {
@@ -552,7 +554,19 @@ def compile(source, flag):
             "^": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"],
             "ɛ": ["ɛ"],
             ",": ["ɛ"],
-            ".": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"]
+            ".": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"],
+            "(": ["(", "ARGUMENTS", ")", "EXPRESSION_TAIL"],
+            ")": ["ɛ"]
+        },
+
+        "ARGUMENTS": {
+            "INTVAL": ["INTVAL", "ARGUMENTS_TAIL"],
+            "VARNAME": ["VARNAME", "ARGUMENTS_TAIL"],
+        },
+
+        "ARGUMENTS_TAIL": {
+            ",": [",", "ARGUMENTS"],
+            ")": ["ɛ"]
         },
 
         "OPERATOR": {
@@ -589,7 +603,19 @@ def compile(source, flag):
             "^": ["OPERATOR", "TERM_FLOAT", "EXPRESSION_TAIL_FLOAT"], 
             "ɛ": ["ɛ"],
             ",": ["ɛ"],
-            ".": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"]
+            ".": ["OPERATOR", "TERM_INT", "EXPRESSION_TAIL"],
+            "(": ["(", "ARGUMENTS_FLOAT", ")", "EXPRESSION_TAIL"],
+            ")": ["ɛ"]
+        },
+
+        "ARGUMENTS_FLOAT": {
+            "INTVAL": ["FLOATVAL", "ARGUMENTS_TAIL_FLOAT"],
+            "VARNAME": ["VARNAME", "ARGUMENTS_TAIL_FLOAT"],
+        },
+
+        "ARGUMENTS_TAIL_FLOAT": {
+            ",": [",", "ARGUMENTS"],
+            ")": ["ɛ"]
         },
 
         "TERM_FLOAT": {
@@ -822,7 +848,7 @@ def compile(source, flag):
     }
 
     #parse_tree = parse(tokens, Grammar_table)
-    parse_tree = parse_without_errors(tokens, Grammar_table)
+    parse_tree = parse(tokens, Grammar_table)
     """ print(parse_tree) """
     if(flag):
         process_syntax_tree(parse_tree, "syntax_tree_output")
