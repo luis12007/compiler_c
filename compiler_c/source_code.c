@@ -11,7 +11,7 @@
 int factorial(int n) {
 
     /* VARIABLES */
-    float result33 = 50.0;
+    float float = 50.0;
     int result = 1, result22 = 2;
     float result2 = 20.2, result3 = 3.3f;
     char a = 'c';
@@ -42,3 +42,38 @@ void main() {
     factorial(1);
     return;
 }
+
+/* TESTING
+
+    float float = 50.0;
+    int val = macro(5);
+    float invalid_eq = 5.5 / "abc";
+
+
+
+    #include "file1.h"
+    #include "file2.h"
+
+    {
+    int x = "string";
+    }
+
+    float invalid_expr = 1 / 0;
+    float invalid_expr2 = 1.0 / (2 - 2);
+    int logic = 10 &&;
+
+    return 5;
+    void main() {
+        int val = 10;
+        return val;
+    }
+
+    int factorial float (int n);
+        factorial();
+        factorial(1, 2);
+
+    int result = 10 ^ 5;
+    char invalidChar = 'abcd';
+    float eq = 3.5 & 2.2;
+
+ */

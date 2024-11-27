@@ -134,7 +134,6 @@ def validate_parameterized_expression(expression, parameters):
 
 
 # ---------------- Validate Symbol Table ----------------
-# ---------------- Validate Symbol Table ----------------
 def validate_symbol_table(symbol_table):
     """
     Validates the symbol table for semantic errors.
@@ -242,7 +241,7 @@ def semantic_analysis(symbol_table, parse_tree):
     else:
         print("YES - Code semantically correct.")
 
-
+# ---------------- Return ----------------
 def get_function_names_and_types(parse_tree):
     """
     Extracts and prints function names and their types from the parse tree.

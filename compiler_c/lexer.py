@@ -1,5 +1,4 @@
 from prettytable import PrettyTable
-import re
 
 """ ------------------------DICCIONARIOS------------------------------- """
 # Define dictionaries for reserved words, operators, and delimiters
