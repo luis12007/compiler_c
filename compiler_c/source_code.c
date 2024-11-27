@@ -4,8 +4,8 @@
 /* DEFINES */
 #define vector<int> vi
 #define loop(x,n) for(int x = 0; x < n; ++x) 
-#define macro(x) (x < 10)
-#define macro3(x) (x * 10)
+#define macro(x,y) (x * y)
+#define macro2(x) (x < 10)
 
 /* FUNCTIONS */
 int factorial(int n) {
@@ -23,8 +23,9 @@ int factorial(int n) {
 
     float floatint = 2;
 
-    int val = macro(1,result);
-    float val = macro(3.2,result);
+    int trymacro = macro(2,30);
+    /* float trymacro2 = macro2(3.2); */
+    /* int varname = loop(3,2); */
 
     /* TEST -----------------------------*/
 

@@ -136,7 +136,7 @@ def validate_parameterized_expression(expression, parameters):
 # ---------------- Validate Symbol Table ----------------
 def validate_symbol_table(symbol_table):
     """
-    Validates the symbol table for semantic errors.
+    Validates the symbol table for semantic errors, including macro calls.
     """
     global errors, processed_define_statements
     variable_names = set()  # Track variable names to detect duplicates
@@ -161,8 +161,70 @@ def validate_symbol_table(symbol_table):
             else:
                 errors.append(f"Variable '{entry.name}' declared but not initialized at line {entry.line}.")
 
+        # Handle macro calls
+        if isinstance(entry.value, str) and "(" in entry.value and ")" in entry.value:
+            macro_match = re.match(r"(\w+)\((.*?)\)", entry.value)
+            if macro_match:
+                macro_name, args = macro_match.groups()
+                args = [arg.strip() for arg in args.split(",") if arg.strip()]  # Split and strip arguments
+
+                # Find the macro definition in the symbol table
+                macro_entry = next((e for e in symbol_table if e.name == macro_name and e.scope == "Define Statement"), None)
+                if macro_entry:
+                    # Evaluate the macro
+                    try:
+                        # Evaluate each argument (substitute variables if necessary)
+                        evaluated_args = [
+                            evaluate_expression(substitute_variables(arg, symbol_table)) for arg in args
+                        ]
+
+                        # Evaluate the macro using its body
+                        evaluated_value = evaluate_macro(macro_name, evaluated_args, symbol_table)
+
+                        # Validate type compatibility and push errors if mismatched
+                        if entry.var_type == "int":
+                            print(entry)
+                            print(evaluated_value)
+                            print(isinstance(evaluated_value, int))
+                            if not isinstance(evaluated_value, int):
+                                print("im here")
+
+                                errors.append(
+                                    f"Type error: Macro '{entry.value}' evaluates to '{evaluated_value}', which cannot be assigned to int variable '{entry.name}' at line {entry.line}."
+                                )
+                        elif entry.var_type == "float":
+                            if not isinstance(evaluated_value, (int, float)):
+                                errors.append(
+                                    f"Type error: Macro '{entry.value}' evaluates to '{evaluated_value}', which cannot be assigned to float variable '{entry.name}' at line {entry.line}."
+                                )
+                        elif entry.var_type == "char":
+                            if not (isinstance(evaluated_value, str) and len(evaluated_value) == 1):
+                                errors.append(
+                                    f"Type error: Macro '{entry.value}' evaluates to '{evaluated_value}', which cannot be assigned to char variable '{entry.name}' at line {entry.line}."
+                                )
+                        if evaluated_value == True or evaluated_value == False:
+                                errors.append(
+                                    f"Type error: Macro '{entry.value}' evaluates to '{evaluated_value}', which cannot be assigned to bool variable '{entry.name}' at line {entry.line}."
+                                )
+                    except ValueError as e:
+                        errors.append(f"Type error: {e} in macro '{entry.value}' at line {entry.line}.")
+                else:
+                    errors.append(
+                        f"Semantic error: Macro '{macro_name}' is not defined in the symbol table for variable '{entry.name}' at line {entry.line}."
+                    )
+
+
+
         # Check type consistency
         if entry.value is not None and entry.value != "":
+            # Check if the value is a macro
+            if isinstance(entry.value, str) and "(" in entry.value and ")" in entry.value:
+                macro_name = entry.value.split("(")[0].strip()
+                macro_entry = next((e for e in symbol_table if e.name == macro_name and e.scope == "Define Statement"), None)
+                if macro_entry:
+                    # Skip this entry as it will be handled separately for macros
+                    continue
+                
             if isinstance(entry.value, str) and re.search(r"[+\-*/^]", entry.value):
                 try:
                     substituted_expression = substitute_variables(entry.value, symbol_table)
@@ -201,6 +263,38 @@ def validate_symbol_table(symbol_table):
                     errors.append(
                         f"Type error: Value '{entry.value}' cannot be assigned to float variable '{entry.name}' at line {entry.line}."
                     )
+
+
+def evaluate_macro(macro_name, args, symbol_table):
+    """
+    Evaluates a macro by replacing its parameters with the provided arguments
+    and computing the result.
+    """
+    global errors
+    # Find the macro definition
+    macro_entry = next((e for e in symbol_table if e.name == macro_name and e.scope == "Define Statement"), None)
+    if not macro_entry:
+        raise ValueError(f"Macro '{macro_name}' is not defined.")
+
+    # Extract defined parameters and body
+    defined_params = macro_entry.parameters[1:-1]  # Remove parentheses
+    defined_params = [param.strip() for param in defined_params.split(",") if param.strip()]  # Remove spaces and empty params
+    macro_body = macro_entry.value
+
+    if len(args) != len(defined_params):
+        raise ValueError(
+            f"Macro '{macro_name}' expects {len(defined_params)} parameters but got {len(args)}."
+        )
+
+    # Substitute parameters with arguments in the macro body
+    for param, arg in zip(defined_params, args):
+        macro_body = macro_body.replace(param, str(arg))
+
+    # Evaluate the substituted macro body
+    try:
+        return evaluate_expression(macro_body)
+    except ValueError as e:
+        raise ValueError(f"Error evaluating macro '{macro_name}': {e}")
 
 # ---------------- Analyze ----------------
 def semantic_analysis(symbol_table, parse_tree):
