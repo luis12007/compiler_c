@@ -140,7 +140,7 @@ def compile(source, flag):
         },
 
         "FUNCINTINIT": {
-            "int": ["int", "VARNAME", "FUNCINTAUX"],
+            "int": ["int", "VARNAME_CHECK", "FUNCINTAUX"],
             ")": ["ɛ"]
         },
 
@@ -151,7 +151,7 @@ def compile(source, flag):
         },
         
         "FUNCFLOATINIT": {
-            "float": ["float", "VARNAME", "FUNCFLOATAUX"],
+            "float": ["float", "VARNAME_CHECK", "FUNCFLOATAUX"],
             ")": ["ɛ"]
         },
 
@@ -162,7 +162,7 @@ def compile(source, flag):
         },
         
         "FUNCCHARINIT": {
-            "char": ["char", "VARNAME", "FUNCCHARAUX"],
+            "char": ["char", "VARNAME_CHECK", "FUNCCHARAUX"],
             ";": ["ɛ"]
         },
 
@@ -173,7 +173,7 @@ def compile(source, flag):
         },
         
         "FUNCSTRINGINIT": {
-            "string": ["string", "VARNAME", "FUNCSTRINGAUX"],
+            "string": ["string", "VARNAME_CHECK", "FUNCSTRINGAUX"],
             ")": ["ɛ"]
         },
 
@@ -184,7 +184,7 @@ def compile(source, flag):
         },
         
         "FUNCDOUBLEINIT": {
-            "double": ["double", "VARNAME", "FUNCDOUBLEAUX"],
+            "double": ["double", "VARNAME_CHECK", "FUNCDOUBLEAUX"],
             ")": ["ɛ"]
         },
 
@@ -195,7 +195,7 @@ def compile(source, flag):
         },
         
         "FUNCLONGINIT": {
-            "long": ["long", "VARNAME", "FUNCLONGAUX"],
+            "long": ["long", "VARNAME_CHECK", "FUNCLONGAUX"],
             ")": ["ɛ"]
         },
 
@@ -206,7 +206,7 @@ def compile(source, flag):
         },
         
         "FUNCSHORTINIT": {
-            "short": ["short", "VARNAME", "FUNCSHORTAUX"],
+            "short": ["short", "VARNAME_CHECK", "FUNCSHORTAUX"],
             ")": ["ɛ"]
         },
 
@@ -282,7 +282,7 @@ def compile(source, flag):
         },
         
         "SWITCHSTATEMENT": {
-            "switch": ["switch", "(", "VARNAME", ")", "{", "SWITCHCASELIST", "}"]
+            "switch": ["switch", "(", "VARNAME_CHECK", ")", "{", "SWITCHCASELIST", "}"]
         },
         
         "SWITCHCASELIST": {
@@ -315,15 +315,15 @@ def compile(source, flag):
 
         #Changed to allow for multiple conditions
         "SIMPLE_CONDITION": {
-        "VARNAME": ["EXPRESSION", "CONDOPERATOR", "EXPRESSION"],
-        "INTVAL": ["EXPRESSION", "CONDOPERATOR", "EXPRESSION"],
-        "FLOATVAL": ["EXPRESSION", "CONDOPERATOR", "EXPRESSION"]
+            "VARNAME": ["EXPRESSION", "CONDOPERATOR", "EXPRESSION"],
+            "INTVAL": ["EXPRESSION", "CONDOPERATOR", "EXPRESSION"],
+            "FLOATVAL": ["EXPRESSION", "CONDOPERATOR", "EXPRESSION"]
         },
 
         "EXPRESSION": {
-        "VARNAME": ["VARNAME"],
-        "INTVAL": ["INTVAL", "FLOAT_AUX"],
-        "FLOATVAL": ["FLOATVAL"]
+            "VARNAME": ["VARNAME"],
+            "INTVAL": ["INTVAL", "FLOAT_AUX"],
+            "FLOATVAL": ["FLOATVAL"]
         },
 
         "CONDOPERATOR": {
@@ -361,8 +361,12 @@ def compile(source, flag):
         },
         
         "VARNAME": {
-        "[a-zA-Z_][a-zA-Z0-9_]*": ["ε"]
-        },  
+            "[a-zA-Z_][a-zA-Z0-9_]*": ["ε"]
+        },
+        
+        "VARNAME_CHECK":{
+            "VARNAME": ["VARNAME"]
+        },
         
         "KEYWORD": {
             "static": ["static"],
@@ -379,7 +383,7 @@ def compile(source, flag):
         
         #Changing for ambiguity
         "DEFINESTATEMENT": {
-        "#define": ["#define", "VARNAME", "DEFINEBODY"]
+        "#define": ["#define", "VARNAME_CHECK", "DEFINEBODY"]
         },
 
         "DEFINEBODY": {
@@ -471,44 +475,44 @@ def compile(source, flag):
 
         # INTINIT updated
         "INTINIT": {
-            "int": ["int", "VARNAME", "INTLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT"],
+            "int": ["int", "VARNAME_CHECK", "INTLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT"],
             ";": ["ɛ"]  # Allow the list to end on semicolon
         },
         
         # FLOATINIT updated
         "FLOATINIT": {  # Entry point for `float` declarations
-        "float": ["float", "VARNAME", "FLOATLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT"],
+        "float": ["float", "VARNAME_CHECK", "FLOATLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT"],
         ";": ["ɛ"]
         },
         
         # CHARINIT updated
         "CHARINIT": {
-            "char": ["char", "VARNAME", "CHARLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT"],
+            "char": ["char", "VARNAME_CHECK", "CHARLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT"],
             ";": ["ɛ"]
         },
         
         # STRINGINIT updated
         "STRINGINIT": {
-            "string": ["string", "VARNAME", "STRINGLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT"],
+            "string": ["string", "VARNAME_CHECK", "STRINGLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT"],
             ";": ["ɛ"]
         },
         
         
         # DOUBLEINIT updated
         "DOUBLEINIT": {
-            "double": ["double", "VARNAME", "DOUBLELIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT"],
+            "double": ["double", "VARNAME_CHECK", "DOUBLELIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT"],
             ";": ["ɛ"]
         },
         
         # LONGINIT updated
         "LONGINIT": {
-            "long": ["long", "VARNAME", "LONGLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT"],
+            "long": ["long", "VARNAME_CHECK", "LONGLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT"],
             ";": ["ɛ"]
         },
         
         # SHORTINIT updated
         "SHORTINIT": {
-            "short": ["short", "VARNAME", "SHORTLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT"],
+            "short": ["short", "VARNAME_CHECK", "SHORTLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT"],
             ";": ["ɛ"]
         },
         
@@ -516,7 +520,7 @@ def compile(source, flag):
         # INTLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT updated
         "INTLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT": {
             "=": ["=", "EXPRESSION_INT", "INTLIST"], 
-            ",": [",", "VARNAME", "INTLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT"],  
+            ",": [",", "VARNAME_CHECK", "INTLIST_NO_ASSIGNMENT_OR_WITH_ASSIGNMENT"],  
             ";": [";"],  
             "ɛ": []
         },
@@ -530,7 +534,7 @@ def compile(source, flag):
 
         "TERM_INT": {
             "VARNAME": ["VARNAME"],
-            "[0-9][0-9]*": ["[0-9][0-9]*"],
+            "INTVAL": ["INTVAL"],
             "-": ["ɛ"],
             "+": ["ɛ"],
             "-": ["ɛ"],
@@ -666,7 +670,7 @@ def compile(source, flag):
         
         # STRINGLIST with semicolon handling
         "STRINGLIST": {
-            ",": [",", "VARNAME", "STRINGLIST"],
+            ",": [",", "VARNAME_CHECK", "STRINGLIST"],
             "=": ["=", "STRINGVAL", "STRINGLIST"],
             ";": ["ɛ"],
             "ɛ": []
@@ -674,7 +678,7 @@ def compile(source, flag):
         
         # DOUBLELIST with semicolon handling
         "DOUBLELIST": {
-            ",": [",", "VARNAME", "DOUBLELIST"],
+            ",": [",", "VARNAME_CHECK", "DOUBLELIST"],
             "=": ["=", "DOUBLEVAL", "DOUBLELIST"],
             ";": ["ɛ"],
             "ɛ": []
@@ -682,7 +686,7 @@ def compile(source, flag):
         
         # LONGLIST with semicolon handling
         "LONGLIST": {
-            ",": [",", "VARNAME", "LONGLIST"],
+            ",": [",", "VARNAME_CHECK", "LONGLIST"],
             "=": ["=", "INTVAL", "LONGLIST"],
             ";": ["ɛ"],
             "ɛ": []
@@ -690,7 +694,7 @@ def compile(source, flag):
         
         # SHORTLIST with semicolon handling
         "SHORTLIST": {
-            ",": [",", "VARNAME", "SHORTLIST"],
+            ",": [",", "VARNAME_CHECK", "SHORTLIST"],
             "=": ["=", "INTVAL", "SHORTLIST"],
             ";": ["ɛ"],
             "ɛ": []
@@ -795,8 +799,8 @@ def compile(source, flag):
         
         "VARCHANGESTATEMENT": {
             "VARNAME": ["VARNAME", "VARIABLE_MODIFICATION"],
-            "+": ["VARIABLE_MODIFICATION", "VARNAME"],                   # Handles prefix increment (e.g., ++VARNAME)
-            "-": ["VARIABLE_MODIFICATION", "VARNAME"],
+            "+": ["VARIABLE_MODIFICATION", "VARNAME_CHECK"],                   # Handles prefix increment (e.g., ++VARNAME)
+            "-": ["VARIABLE_MODIFICATION", "VARNAME_CHECK"],
             "=": ["VARIABLE_MODIFICATION"]
         },
         

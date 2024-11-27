@@ -20,6 +20,8 @@ def parse(tokens, parse_table):
     tokens.append(Token('$', '$', -1))  # End-of-input marker
     index = 0  # Track the position in the token list
 
+    RESERVED_WORDS = {"char", "int", "float", "return", "void", "if", "else"}  # Reserved words set
+
     # Syntax tree data structure
     syntax_tree = []  # List to store the syntax tree nodes
 
