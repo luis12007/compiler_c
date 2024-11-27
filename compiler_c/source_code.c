@@ -3,7 +3,7 @@
 
 /* DEFINES */
 #define vector<int> vi
-#define loop(x,n) for(int x = 0; x < n; ++x) 
+#define loop(x,y) for(int x = 0; x < y; ++x) 
 #define macro(x,y) (x * y)
 #define macro2(x) (x < 10)
 
@@ -25,7 +25,8 @@ int factorial(int n) {
 
     int trymacro = macro(2,30);
     /* float trymacro2 = macro2(3.2); */
-    /* int varname = loop(3,2); */
+    int varname = loop(3,2);
+    loop(3,2)
 
     /* TEST -----------------------------*/
 
