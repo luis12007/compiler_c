@@ -15,7 +15,7 @@ class Token:
 
 def parse(tokens, parse_table):
     errr_stack = []
-    counter_error = 0
+    
     stack = ['$']
     stack.append('SOURCE')  # Start with the grammar's starting symbol
 
@@ -29,22 +29,44 @@ def parse(tokens, parse_table):
         non_terminal: {pattern: re.compile(pattern) for pattern in parse_table[non_terminal] if "[" in pattern}
         for non_terminal in parse_table
     }
+    index_auxiliar = index
+    counter_errr = 0
 
     print("\nStarting Parsing Process:")
     print(f"Initial Stack: {stack}\n")
     print(f"Tokens: {tokens}\n")
 
     while stack:
-        # print(f"Index: {index}\n")
+        #print(f"current_line: {tokens[index].linea}\n")
+        #print(f"counter_errr: {counter_errr}\n")
+        if index_auxiliar == index:
+            counter_errr+= 1
+        else: 
+            counter_errr = 0
+            index_auxiliar = index
+        
+        if counter_errr >= 100: 
+            #print(f"counter error : {counter_errr}")
+            errr_stack.append(f"Error: A token is causing a fatal error around line {tokens[index].linea}")
+            print(f"a fatal error has ocurred in the line {tokens[index].linea} with another errors : {errr_stack}")
+            stack = []
+
+        #print(f"Index: {index}\n")
         top = stack.pop()
-        # print(f"tOP: {top}\n")
+        #print(f"tOP: {top}\n")
         current_token = tokens[index]
-        # print(f"current_token: {current_token}\n")
-        # print(f"Index: {index}\n")
+        #print(f"current_token: {current_token}\n")
+        #print(f"Index: {index}\n")
         result = ""
         transition = f"{top} -> ɛ"  # Default transition for empty rules
 
+        if current_token.valor == "}" and top == "FLOAT_AUX" and (tokens[index-1].tipo == "VARNAME" or tokens[index-1].tipo == "INTVAL"):
+            tokens.insert(index, Token(";", ";", current_token.linea))
+            errr_stack.append(f"Error: Missing semicolon in line {current_token.linea}")
+            continue
+            
         # Check if `top` is a regex-based non-terminal
+        
         if top in regex_patterns and regex_patterns[top]:  # Only attempt regex if patterns exist for this non-terminal
             matched = False
             for pattern, compiled_regex in regex_patterns[top].items():
@@ -78,7 +100,7 @@ def parse(tokens, parse_table):
                         print("error 1")
 
                         tokens, errr_iteration, index = handle_error_non_terminal(top, current_token, index, tokens, parse_table)
-                        time.sleep(10)
+                        time.sleep(3)
                         errr_stack.append(errr_iteration)
                         stack.append(top)
                         continue
@@ -92,7 +114,7 @@ def parse(tokens, parse_table):
                     continue
                 else:
                     tokens, errr_iteration = handle_error_terminal(top, current_token,  index, tokens)
-                    time.sleep(10)
+                    time.sleep(3)
 
                     errr_stack.append(errr_iteration)
                     stack.append(top)
@@ -116,7 +138,7 @@ def parse(tokens, parse_table):
                 tokens, errr_iteration, index = handle_error_non_terminal(top, current_token, index, tokens, parse_table)
                 errr_stack.append(errr_iteration)
                 stack.append(top)
-                time.sleep(10)
+                time.sleep(3)
                 continue
         #Terminal handling
         elif top == current_token.valor:
@@ -129,7 +151,7 @@ def parse(tokens, parse_table):
 
         else:
             tokens, errr_iteration = handle_error_terminal(top, current_token,  index, tokens)
-            time.sleep(10)
+            time.sleep(3)
             errr_stack.append(errr_iteration)
             stack.append(top)
             continue
@@ -158,9 +180,7 @@ def parse(tokens, parse_table):
 def handle_error_non_terminal(stack_top, current_tkn, index, tokens, parse_table):
     global errr_stack
 
-    print(f"Error detected with non-terminal: {stack_top} and token: {current_tkn.valor}")
-    error_fixed = False
-
+    
     # Estrategia 1: Omitir tokens no válidos(Contemplado a lo mucho avanzar 1 token adelante(Cumpliendo gramática LL1))
     if current_tkn.valor not in parse_table[stack_top] or current_tkn.tipo not in parse_table[stack_top]:
         if tokens[index + 1].valor in parse_table[stack_top] or tokens[index + 1].tipo in parse_table[stack_top]:
@@ -170,10 +190,10 @@ def handle_error_non_terminal(stack_top, current_tkn, index, tokens, parse_table
 
                 print(f"Missing token found")
                 del tokens[index]
-                #index += 1
+                
                 error_msg = f"There is a token not expected in the line {current_tkn.linea} before token { tokens[index].valor }"
                 print(error_msg)
-                time.sleep(2)
+                time.sleep(3)
                 return tokens, error_msg, index
         
 
@@ -191,9 +211,9 @@ def handle_error_non_terminal(stack_top, current_tkn, index, tokens, parse_table
             error_msg = f"There is a missing token in the line {current_tkn.linea}, please insert the correct element following the sintax, possible tokens expected {posible_tokens}"
         
         print(error_msg)
-        time.sleep(2)
+        time.sleep(3)
         tokens.insert(index, missing_token)
-        #index += 1
+        
         error_fixed = True
         #Salta a la siguiente iteración sin aumentar el número del elemento
         return tokens, error_msg, index
@@ -205,7 +225,7 @@ def handle_error_non_terminal(stack_top, current_tkn, index, tokens, parse_table
         
         error_msg = f"Sintax error in the line {current_tkn.linea}, please verify the sintax"
         print(error_msg)
-        time.sleep(2)
+        time.sleep(3)
 
         
         return tokens, error_msg, index
@@ -239,10 +259,12 @@ def find_missing_token(non_terminal, parse_table, crrnt_tkn, current_line, next_
             print("Falta coma")
             return Token('Coma', ',', current_line), expected_tokens
         for key in parse_table[non_terminal]:
+            #print("Aquí")
+            print("Key:", key)
             # Retorna el primer token válido en la tabla
             if key != "ɛ":  # Ignoramos las producciones vacías
-                if key in parse_table['FORVAR'] or key in parse_table['STATEMENT'] or key in parse_table['EXPRESSION_TAIL'] or key in parse_table['CONDOPERATOR']:
-                    print("Key:", key)
+                if key in parse_table['FORVAR'] or key in parse_table['STATEMENT'] or key in parse_table['EXPRESSION_TAIL'] or key in parse_table['CONDOPERATOR'] or key in parse_table['CONDITION'] or key in parse_table['ELSE']:
+                    #print("Key:", key)
                     expected_tokens.append(key)
 
 

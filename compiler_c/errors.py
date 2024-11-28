@@ -70,7 +70,7 @@ def parse(tokens, parse_table):
                         syntax_tree.append((top, rule, "Rule Applied"))  # Save rule to syntax tree
                     else:
                         print("error 1")
-                        time.sleep(15)
+                        time.sleep(3)
                         tokens, errr_iteration, index = handle_error_non_terminal(top, current_token, index, tokens, parse_table)
                         errr_stack.append(errr_iteration)
                         continue
@@ -103,7 +103,7 @@ def parse(tokens, parse_table):
                 syntax_tree.append((top, rule, "Rule Applied"))  # Save rule to syntax tree
             else:
                 print("error 2")
-                time.sleep(15)
+                time.sleep(3)
                 tokens, errr_iteration, index = handle_error_non_terminal(top, current_token, index, tokens, parse_table)
                 errr_stack.append(errr_iteration)
                 continue
@@ -154,7 +154,7 @@ def handle_error_non_terminal(stack_top, current_tkn, index, tokens, parse_table
             index += 1
             error_msg = f"There is a token not expected in the line {current_tkn.linea}"
             print(error_msg)
-            time.sleep(15)
+            time.sleep(3)
             return tokens, error_msg, index
         
 
@@ -165,7 +165,7 @@ def handle_error_non_terminal(stack_top, current_tkn, index, tokens, parse_table
         missing_token = find_missing_token(stack_top, parse_table, current_tkn.linea)  # Función para determinar el token esperado
         error_msg = f"There is a missing token in the line {current_tkn.linea}, please insert the correct element following the sintax"
         print(error_msg)
-        time.sleep(15)
+        time.sleep(3)
         tokens.insert(index, missing_token)
         index += 1
         error_fixed = True
@@ -179,7 +179,7 @@ def handle_error_non_terminal(stack_top, current_tkn, index, tokens, parse_table
         
         error_msg = f"Sintax error in the line {current_tkn.linea}, please verify the sintax"
         print(error_msg)
-        time.sleep(15)
+        time.sleep(3)
 
         
         return tokens, error_msg, index

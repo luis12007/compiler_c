@@ -39,21 +39,22 @@ int factorial(int n) {
     }
 
     /* IF STATEMENT */
-    if (!result2 >= 10.0) {
+     if (!result2 >= 10.0) {
         result = 10;
         char b = 's';
     } else {
         result = 20;
     } 
     return result;
-}
 
+}
 
 /* MAIN FUNCTION */
 void main() {
     factorial(1);
     return;
 }
+
 
 /* TESTING
 
